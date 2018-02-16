@@ -111,6 +111,9 @@ final class HHVMDaemon extends PHPEngine {
     if ($this->options->statCache) {
       $args->addAll(Vector {'-v', 'Server.StatCache=1'});
     }
+    if ($this->options->warmupStats && $this->options->jit) {
+      $args->addAll(Vector {'-v', 'Eval.JitTimer=1'});
+    }
     if ($this->options->pcreCache) {
       $args->addAll(
         Vector {'-v', 'Eval.PCRECacheType='.$this->options->pcreCache},
@@ -295,6 +298,67 @@ final class HHVMDaemon extends PHPEngine {
     invariant($this->waitForStop(1, 0.1), "HHVM is unstoppable!");
   }
 
+  public function collectStats(): Map<string, Map<string, num>> {
+    if (!$this->options->warmupStats || !$this->options->jit) {
+        return Map {};
+    }
+    $jit_timers = Map {};
+    $counts = Map {};
+    $entry_marker = "JIT timers for";
+    $log = file_get_contents($this->options->tempDir.'/wrmpstats.log');
+    $lines = explode("\n", trim($log));
+    $cur_url = null;
+
+    foreach ($lines as $line) {
+        if (strlen($line) == 0) {
+            $cur_url = null;
+            continue;
+        }
+        if (substr($line, 0, strlen($entry_marker)) === $entry_marker) {
+            $cur_url = explode($entry_marker, $line)[1];
+            if (!$jit_timers->containsKey($cur_url)) {
+                $jit_timers[$cur_url] = Map {};
+                $counts[$cur_url] = Map {};
+            }
+            continue;
+        }
+        invariant(
+            $cur_url != null,
+            'Unrecognized warmup stats file format!');
+        if (substr($line, 0, 4) === "name" || $line[0] === '-') {
+            continue;
+        }
+        #name   |   count   total(in us)   average(in ns)     max(in ns)
+        $parts = explode(' ', preg_replace('/\s+/', ' ', $line));
+        list($stat_name, $count, $total) =
+            [$parts[0],
+            (int)filter_var($parts[2], FILTER_SANITIZE_NUMBER_INT),
+            (float)filter_var($parts[3], FILTER_SANITIZE_NUMBER_FLOAT)];
+
+        if (!$jit_timers[$cur_url]->containsKey($stat_name)) {
+            $jit_timers[$cur_url][$stat_name] = 0;
+            $counts[$cur_url][$stat_name] = 0;
+        }
+
+        $jit_timers[$cur_url][$stat_name] += $total;
+        $counts[$cur_url][$stat_name] += $count;
+    }
+    $combined = Map{};
+    foreach ($jit_timers as $url => $entries) {
+        foreach ($entries as $stat_name => $avg) {
+            #$jit_timers[$url][$stat_name] /= $counts[$url][$stat_name];
+            if (!$combined->containsKey($stat_name)) {
+                $combined[$stat_name] = (float)0;
+            }
+            #show 'Combined' in seconds instead of us
+            $combined[$stat_name] += $jit_timers[$url][$stat_name] / 1000;
+        }
+    }
+
+    $jit_timers['Combined'] = $combined;
+    return $jit_timers;
+  }
+
   public function writeStats(): void {
     $tcprint = $this->options->tcprint;
     $conf = $this->options->tempDir.'/conf.hdf';
@@ -354,7 +418,14 @@ final class HHVMDaemon extends PHPEngine {
   }
 
   protected function getEnvironmentVariables(): Map<string, string> {
-    return Map {'OSS_PERF_TARGET' => (string) $this->target};
+    $envVars = Map {'OSS_PERF_TARGET' => (string) $this->target};
+    if ($this->options->warmupStats && $this->options->jit) {
+        $traceFile = $this->options->tempDir.'/wrmpstats.log';
+        $envVars->add(Pair {'HPHP_TRACE_FILE', $traceFile})
+                ->add(Pair {'TRACE', 'jittime:100'});
+
+    }
+    return $envVars;
   }
 
   public function __toString(): string {

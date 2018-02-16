@@ -218,6 +218,15 @@ final class PerfRunner {
       }
     }
 
+    $jit_stats = $php_engine->collectStats();
+    foreach ($jit_stats as $page => $stats) {
+      if ($combined_stats->containsKey($page)) {
+        $combined_stats[$page]->setAll($stats);
+      } else {
+        $combined_stats[$page] = $stats;
+      }
+    }
+
     if (!$options->verbose) {
       $combined_stats =
         $combined_stats->filterWithKey(($k, $v) ==> $k === 'Combined');

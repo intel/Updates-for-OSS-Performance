@@ -84,6 +84,7 @@ final class PerfOptions {
   public bool $tcprint = false;
   public bool $pcredump = false;
   public bool $profBC = false;
+  public bool $warmupStats = false;
 
   public bool $applyPatches = false;
 
@@ -164,6 +165,7 @@ final class PerfOptions {
       'tcprint',
       'dump-pcre-cache',
       'profBC',
+      'warmup-stats',
       'setUpTest:',
       'db-username:',
       'db-password:',
@@ -318,6 +320,7 @@ final class PerfOptions {
 
     $this->pcredump = $this->getBool('dump-pcre-cache');
     $this->profBC = $this->getBool('profBC');
+    $this->warmupStats = $this->getBool('warmup-stats');
     $this->forceInnodb = $isFacebook || $this->getBool('force-innodb');
 
     if ($isFacebook && $this->php5 === null && $this->hhvm === null) {
