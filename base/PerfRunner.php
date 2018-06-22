@@ -149,7 +149,7 @@ final class PerfRunner {
     while (!$options->skipWarmUp && $php_engine->needsRetranslatePause()) {
       self::PrintProgress('Extending warmup, server is not done warming up.');
       sleep(3);
-      $siege = new Siege($options, $target, RequestModes::WARMUP_MULTI, '10s');
+      $siege = new Siege($options, $target, RequestModes::WARMUP_MULTI, 10);
       $siege->start();
       invariant($siege->isRunning(), 'Failed to start siege');
       $siege->wait();

@@ -22,11 +22,6 @@ final class PerfSettings {
     return 1;
   }
 
-  public static function BenchmarkTime(): string {
-    // [0-9]+[SMH]
-    return '1M'; // 1 minute
-  }
-
   ///// Server Settings /////
 
   public static function HttpPort(): int {

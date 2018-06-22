@@ -103,6 +103,8 @@ final class PerfOptions {
   public float $delayMemcachedStartup;
   public float $delayProcessLaunch; // secs to wait after start process
   public float $delayCheckHealth; // secs to wait before hit /check-health
+  // in secs, store as int
+  public int $benchmarkTime;
 
   //
   // Maximum wait times, as for example given to file_get_contents
@@ -176,6 +178,7 @@ final class PerfOptions {
       'php-extra-arguments:',
       'php-fcgi-children:',
       'no-time-limit',
+      'benchmark-time:',
       'fetch-resources',
       'skip-sanity-check',
       'skip-warmup',
@@ -338,6 +341,7 @@ final class PerfOptions {
     $this->delayMemcachedStartup = $this->getFloat('delay-memcached-startup', 1.0);
     $this->delayProcessLaunch = $this->getFloat('delay-process-launch', 0.0);
     $this->delayCheckHealth = $this->getFloat('delay-check-health', 1.0);
+    $this->benchmarkTime = $this->getInt('benchmark-time', 60);
     $this->maxdelayUnfreeze = $this->getFloat('max-delay-unfreeze', 60.0);
     $this->maxdelayAdminRequest =
       $this->getFloat('max-delay-admin-request', 3.0);

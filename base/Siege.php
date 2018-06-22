@@ -17,7 +17,7 @@ final class Siege extends Process {
     private PerfOptions $options,
     private PerfTarget $target,
     private RequestMode $mode,
-    private string $time = '1M',
+    private int $time = 60,
   ) {
     parent::__construct($options->siege);
     $this->suppress_stdout = true;
@@ -110,11 +110,17 @@ final class Siege extends Process {
 
     $arguments = Vector {};
     if (!$this->options->noTimeLimit) {
+      $timeout = 4 * 60; // 4 minutes
+      if ($this->mode == RequestModes::BENCHMARK) {
+        $timeout += $this->options->benchmarkTime;
+      } else {
+        $timeout += $this->time;
+      }
       $arguments = Vector {
         // See Siege::getExecutablePath()  - these arguments get passed to
         // timeout
         '--signal=9',
-        '5m',
+        (string) $timeout,
         parent::getExecutablePath(),
       };
     }
@@ -148,7 +154,7 @@ final class Siege extends Process {
             '-c',
             $this->options->clientThreads,
             '-t',
-            $this->time,
+            ((string) $this->time).'S',
             '-f',
             $urls_file,
             '--benchmark',
@@ -176,7 +182,7 @@ final class Siege extends Process {
 
         if (!$this->options->noTimeLimit) {
           $arguments->add('-t');
-          $arguments->add(PerfSettings::BenchmarkTime());
+          $arguments->add(((string)$this->options->benchmarkTime).'S');
         }
         return $arguments;
       default:
