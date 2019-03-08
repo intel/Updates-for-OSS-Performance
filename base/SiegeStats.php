@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -11,28 +11,28 @@
 trait SiegeStats {
   abstract protected function getLogFilePath(): string;
 
-  public function collectStats(): Map<string, Map<string, num>> {
+  public function collectStats() {
     $log_lines =
       explode("\n", trim(file_get_contents($this->getLogFilePath())));
     if (count($log_lines) > 1) {
       // Remove possible header line
-      array_splice(&$log_lines, 0, 1);
+      array_splice($log_lines, 0, 1);
     }
-    invariant(
+    assert(
       count($log_lines) === 1,
-      'Expected 1 line in siege log file, got %d',
-      count($log_lines),
+      'Expected 1 line in siege log file'
     );
-    $log_line = array_pop(&$log_lines);
-    $data = (new Vector(explode(',', $log_line)))->map($x ==> trim($x));
-    return Map {
-      'Combined' => Map {
+    $log_line = array_pop($log_lines);
+    $data = array_map(function($x) { return trim($x); }, explode(',',$log_line));
+
+    return array(
+      'Combined' => array(
         'Siege requests' => (int) $data[SiegeFields::TRANSACTIONS],
         'Siege wall sec' => (float) $data[SiegeFields::RESPONSE_TIME],
         'Siege RPS' => (float) $data[SiegeFields::TRANSACTION_RATE],
         'Siege successful requests' => (int) $data[SiegeFields::OKAY],
         'Siege failed requests' => (int) $data[SiegeFields::FAILED],
-      },
-    };
+      )
+    );
   }
 }

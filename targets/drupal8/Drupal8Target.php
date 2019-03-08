@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,7 +9,11 @@
  */
 
 abstract class Drupal8Target extends PerfTarget {
-  public function __construct(protected PerfOptions $options) {}
+  protected $options;
+
+  public function __construct(PerfOptions $options) {
+    $this->options = $options;
+  }
 
   protected function getSanityCheckString(): string {
     return 'Read more';
@@ -23,27 +27,27 @@ abstract class Drupal8Target extends PerfTarget {
       # Extract Drupal core.
       Utils::ExtractTar(
         __DIR__.'/drupal-8.0.0-beta11.tar.gz',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
       # Extract Drush and its vendor dir.
       Utils::ExtractTar(
         __DIR__.'/drush-b4c0683.tar.bz2',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
       Utils::ExtractTar(
         __DIR__.'/drush-b4c0683-vendor.tar.bz2',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
       # Extract static files.
       Utils::ExtractTar(
         __DIR__.'/demo-static.tar.bz2',
-        $this->getSourceRoot().'/sites/default',
+        $this->getSourceRoot().'/sites/default'
       );
     }
     # Settings files and our Twig template setup script.
     copy(
       __DIR__.'/settings/settings.php',
-      $this->getSourceRoot().'/sites/default/settings.php',
+      $this->getSourceRoot().'/sites/default/settings.php'
     );
     $file = $this->getSourceRoot().'/sites/default/settings.php';
     $file_contents = file_get_contents($file);
@@ -51,11 +55,11 @@ abstract class Drupal8Target extends PerfTarget {
     file_put_contents($file, $file_contents);
     copy(
       __DIR__.'/settings/setup.php',
-      $this->getSourceRoot().'/sites/default/setup.php',
+      $this->getSourceRoot().'/sites/default/setup.php'
     );
     copy(
       __DIR__.'/settings/services.yml',
-      $this->getSourceRoot().'/sites/default/services.yml',
+      $this->getSourceRoot().'/sites/default/services.yml'
     );
 
     # Installing the database is left to the child targets.
@@ -82,7 +86,7 @@ abstract class Drupal8Target extends PerfTarget {
     shell_exec(
       'find . -name *.html.twig | '.
       $drush.
-      ' scr sites/default/setup.php 2>&1',
+      ' scr sites/default/setup.php 2>&1'
     );
     chdir($current);
   }

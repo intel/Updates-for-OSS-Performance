@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -8,61 +8,47 @@
  *
  */
 
-newtype Sample = shape(
-  'framework' => string,
-  'runtime' => string,
-  'rps' => float,
-);
-
-newtype Row = shape(
-  'framework' => string,
-  'runtime' => string,
-  'rps_samples' => Vector<float>,
-  'rps_mean' => ?float,
-  'rps_sd' => ?float,
-);
-
-function load_file(string $file): Vector<Sample> {
+function load_file(string $file) {
   $json = file_get_contents($file);
   $data = json_decode($json, /* as associative array = */ true);
-  
-  $results = Vector {};
+
+  $results = [];
   foreach ($data as $framework => $framework_data) {
-    $results->addAll(load_framework($framework, $framework_data));
+    $results = array_merge($results,load_framework($framework, $framework_data));
   }
 
   return $results;
 }
 
-function load_framework(string $framework, $data): Vector<Sample> {
-  $results = Vector {};
+function load_framework(string $framework, $data) {
+  $results = [];
   foreach ($data as $runtime => $runtime_data) {
     $results[] = load_run($framework, $runtime, $runtime_data['Combined']);
   }
   return $results;
 }
 
-function load_run(string $framework, string $runtime, $data): Sample {
-  return shape(
+function load_run(string $framework, string $runtime, $data) {
+  return array(
     'framework' => $framework,
     'runtime' => $runtime,
     'rps' => $data['Siege RPS'],
   );
 }
 
-function load_files(Vector<string> $files): Vector<Row> {
-  $rows_by_key = Map {};
+function load_files($files) {
+  $rows_by_key = [];
   foreach ($files as $file) {
     $samples = load_file($file);
     foreach ($samples as $sample) {
       $key = $sample['framework']."\0".$sample['runtime'];
-      if (!$rows_by_key->containsKey($key)) {
-        $rows_by_key[$key] = shape(
+      if (!array_key_exists($key,$rows_by_key)) {
+        $rows_by_key[$key] = array(
           'framework' => $sample['framework'],
           'runtime' => $sample['runtime'],
-          'rps_samples' => Vector { },
+          'rps_samples' => [],
           'rps_mean' => null,
-          'rps_sd' => null,
+          'rps_sd' => null
         );
       }
       $rows_by_key[$key]['rps_samples'][] = $sample['rps'];
@@ -86,16 +72,16 @@ function load_files(Vector<string> $files): Vector<Row> {
     $rows_by_key[$key] = $row;
   }
 
-  return $rows_by_key->values();
+  return array_values($rows_by_key);
 }
 
-function dump_csv(Vector<Row> $rows): void {
-  $header = Vector {
+function dump_csv($rows): void {
+  $header = array(
     'Framework',
     'Runtime',
     'Mean RPS',
-    'RPS Standard Deviation',
-  };
+    'RPS Standard Deviation'
+  );
 
   $max_sample_count = max($rows->map($row ==> count($row['rps_samples'])));
   for ($i = 1; $i <= $max_sample_count; ++$i) {
@@ -104,20 +90,22 @@ function dump_csv(Vector<Row> $rows): void {
 
   fputcsv(STDOUT, $header);
   foreach ($rows as $row) {
-    $out = Vector {
+    $out = array (
       $row['framework'],
       $row['runtime'],
       $row['rps_mean'],
       $row['rps_sd'],
-    };
-    $out->addAll($row['rps_samples']);
+    );
+    $out = array_merge($out,$row['rps_samples']);
+    //$out->addAll($row['rps_samples']);
     fputcsv(STDOUT, $out);
   }
 }
 
-function main(Vector<string> $argv) {
+function main($argv) {
   $files = clone $argv;
-  $files->removeKey(0);
+  //$files->remoiveKey(0);
+  unset ($files[0]);
   if ($files->isEmpty()) {
     fprintf(STDERR, "Usage: %s results.json [results2.json ...]\n", $argv[0]);
     exit(1);
@@ -125,4 +113,4 @@ function main(Vector<string> $argv) {
   dump_csv(load_files($files));
 }
 
-main(new Vector($argv));
+main($argv);

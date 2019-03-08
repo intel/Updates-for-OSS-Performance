@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,7 +9,10 @@
  */
 
 abstract class SugarCRMTarget extends PerfTarget {
-  public function __construct(protected PerfOptions $options) {}
+  private $options;
+  public function __construct($options) {
+    $this->options = $options;
+  }
 
   public function install(): void {
     $src_dir = $this->options->srcDir;

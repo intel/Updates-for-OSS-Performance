@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,8 +9,11 @@
  */
 
 final class WordpressTarget extends PerfTarget {
+  private $options;
 
-  public function __construct(private PerfOptions $options) {}
+  public function __construct($options) {
+    $this->options = $options;
+  }
 
   public function getSanityCheckString(): string {
     return 'Recent Comments';
@@ -23,7 +26,7 @@ final class WordpressTarget extends PerfTarget {
     } else {
       Utils::ExtractTar(
         __DIR__.'/wordpress-4.2.0.tar.gz',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
     }
 
@@ -49,22 +52,22 @@ final class WordpressTarget extends PerfTarget {
         : PerfSettings::HttpPort();
     $root = 'http://'.gethostname().':'.$visible_port;
 
-    $conn = mysql_connect($this->options->dbHost, 'wp_bench', 'wp_bench');
-    $db_selected = mysql_select_db('wp_bench', $conn);
-    $result = mysql_query(
+    $conn = mysqli_connect($this->options->dbHost, 'wp_bench', 'wp_bench');
+    $db_selected = mysqli_select_db($conn, 'wp_bench');
+    $result = mysqli_query(
+      $conn,
       'UPDATE wp_options '.
       "SET option_value='".
-      mysql_real_escape_string($root).
+      mysqli_real_escape_string($conn,$root).
       "' ".
-      'WHERE option_name IN ("siteurl", "home")',
-      $conn,
+      'WHERE option_name IN ("siteurl", "home")'
     );
     if ($result !== true) {
-      throw new Exception(mysql_error());
+      throw new Exception(mysqli_error($conn));
     }
-    mysql_query(
-      'DELETE FROM wp_options WHERE option_name = "admin_email"',
+    mysqli_query(
       $conn,
+      'DELETE FROM wp_options WHERE option_name = "admin_email"'
     );
   }
 
@@ -99,14 +102,12 @@ final class WordpressTarget extends PerfTarget {
   private function unfreezeRequest(PerfOptions $options): void {
     $url = 'http://'.gethostname().':'.PerfSettings::HttpPort().'/';
     $ctx = stream_context_create(
-      ['http' => ['timeout' => $options->maxdelayUnfreeze]],
+      ['http' => ['timeout' => $options->maxdelayUnfreeze]]
     );
     $data = file_get_contents($url, /* include path = */ false, $ctx);
-    invariant(
+    assert(
       $data !== false,
-      'Failed to unfreeze %s after %f secs',
-      $url,
-      $options->maxdelayUnfreeze,
+      'Failed to unfreeze'.$url.'after '.$options->maxdelayUnfreeze.' secs'
     );
   }
 }

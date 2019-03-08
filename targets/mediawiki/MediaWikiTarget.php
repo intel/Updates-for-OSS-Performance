@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -11,8 +11,10 @@
 final class MediaWikiTarget extends PerfTarget {
 
   const MEDIAWIKI_VERSION = 'mediawiki-1.28.0';
-
-  public function __construct(private PerfOptions $options) {}
+  private $options;
+  public function __construct(PerfOptions $options) {
+    $this->options = $options;
+  }
 
   protected function getSanityCheckString(): string {
     return 'Obama';
@@ -32,7 +34,7 @@ final class MediaWikiTarget extends PerfTarget {
     } else {
       Utils::ExtractTar(
         __DIR__.'/'.self::MEDIAWIKI_VERSION.'.tar.gz',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
     }
 
@@ -52,7 +54,7 @@ final class MediaWikiTarget extends PerfTarget {
     file_put_contents(
       $this->getSourceRoot().'/LocalSettings.php',
       '$wgCacheDirectory="'.$cache_dir.'";'."\n",
-      FILE_APPEND,
+      FILE_APPEND
     );
     if ($this->options->useMemcached) {
       copy(__DIR__.'/Memcached.php', $this->getSourceRoot().'/Memcached.php');
@@ -61,19 +63,18 @@ final class MediaWikiTarget extends PerfTarget {
       file_put_contents(
         $this->getSourceRoot().'/LocalSettings.php',
         'require_once "'.$this->getSourceRoot().'/Memcached.php";'."\n",
-        FILE_APPEND,
+        FILE_APPEND
       );
     }
   }
 
-  <<__Override>>
   public function postInstall(): void {
     Utils::RunCommand(
-      Vector {
+      array (
         PHP_BINARY,
         $this->getSourceRoot().'/maintenance/rebuildLocalisationCache.php',
         '--lang=en',
-      },
+      )
     );
   }
 
@@ -81,7 +82,6 @@ final class MediaWikiTarget extends PerfTarget {
     return $this->options->tempDir.'/'.self::MEDIAWIKI_VERSION;
   }
 
-  <<__Override>>
   public function supportsMemcached(): bool {
     return true;
   }

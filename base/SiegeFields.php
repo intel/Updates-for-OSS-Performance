@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -8,17 +8,17 @@
  *
  */
 
-type SiegeField = int;
+//type SiegeField = ;
 final class SiegeFields {
-  const SiegeField DATE_TIME = 0;
-  const SiegeField TRANSACTIONS = 1;
-  const SiegeField ELAPSED_TIME = 2;
-  const SiegeField DATA_TRANSFERRED = 3;
-  const SiegeField RESPONSE_TIME = 4;
-  const SiegeField TRANSACTION_RATE = 5;
-  const SiegeField THROUGHPUT = 6;
-  const SiegeField CONCURRENCY = 7;
-  const SiegeField OKAY = 8;
-  const SiegeField FAILED = 9;
+  const  DATE_TIME = 0;
+  const  TRANSACTIONS = 1;
+  const  ELAPSED_TIME = 2;
+  const  DATA_TRANSFERRED = 3;
+  const  RESPONSE_TIME = 4;
+  const  TRANSACTION_RATE = 5;
+  const  THROUGHPUT = 6;
+  const  CONCURRENCY = 7;
+  const  OKAY = 8;
+  const  FAILED = 9;
 
 }

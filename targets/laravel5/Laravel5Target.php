@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,7 +9,11 @@
  */
 
 final class Laravel5Target extends PerfTarget {
-  public function __construct(private PerfOptions $options) {}
+  private $options;
+
+  public function __construct(PerfOptions $options) {
+    $this->options = $options;
+  }
 
   protected function getSanityCheckString(): string {
     return 'Laravel 5';
@@ -22,25 +26,25 @@ final class Laravel5Target extends PerfTarget {
     } else {
       shell_exec(
         $this->safeCommand(
-          Vector {
+          array (
             'tar',
             '-C',
             $this->options->tempDir,
             '-zxf',
             __DIR__.'/laravel-5.0.22.tar.gz',
-          },
-        ),
+          )
+        )
       );
       shell_exec(
         $this->safeCommand(
-          Vector {
+          array (
             'tar',
             '-C',
             $this->options->tempDir.'/laravel-5.0.22',
             '-jxf',
             __DIR__.'/vendor.tar.bz2',
-          },
-        ),
+          )
+        )
       );
     }
 

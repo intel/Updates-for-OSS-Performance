@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -21,7 +21,7 @@ if (!file_exists(OSS_PERFORMANCE_ROOT.'/vendor/autoload.php')) {
     STDERR,
     "%s\n",
     'Autoload map not found. Please install composer (see getcomposer.org), '.
-    'and run "composer install" from this directory.',
+    'and run "composer install" from this directory.'
   );
   exit(1);
 }

@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -27,15 +27,12 @@ abstract class PerfTarget {
       PerfSettings::HttpPort().
       $this->getSanityCheckPath();
     $content = file_get_contents($url, /* include path = */ false, $ctx);
-    invariant(
+    assert(
       strstr($content, $this->getSanityCheckString()) !== false,
-      'Failed to find string "%s" in %s',
-      $this->getSanityCheckString(),
-      $url,
+      'Failed to find string'.$this->getSanityCheckString().'in '.$url
     );
   }
 
-  <<__Memoize>>
   final protected function getAssetsDirectory(): string {
     $class = get_class($this);
     $file = (new ReflectionClass($class))->getFileName();
@@ -51,7 +48,7 @@ abstract class PerfTarget {
     }
 
     $patches = glob($dir.'/*.patch');
-    sort(&$patches);
+    sort($patches);
 
     $dir = escapeshellarg($this->getSourceRoot());
 
@@ -92,12 +89,10 @@ abstract class PerfTarget {
   }
 
   public function unfreeze(PerfOptions $options): void {
-    invariant_violation(
-      'If you override needsUnfreeze(), you must override unfreeze() too.',
-    );
+    echo "If you override needsUnfreeze(), you must override unfreeze() too.\n";
   }
 
-  public function safeCommand(Vector<string> $command): string {
+  public function safeCommand($command) {
     // Temporary - too many pull requests in flight, clean up callers introduced
     // by them once they're landed
     return Utils::EscapeCommand($command);

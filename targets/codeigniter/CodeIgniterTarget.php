@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,7 +9,11 @@
  */
 
 final class CodeIgniterTarget extends PerfTarget {
-  public function __construct(private PerfOptions $options) {}
+  private $options;
+
+  public function __construct(private $options) {
+    $this->options = $options;
+  }
 
   protected function getSanityCheckString(): string {
     return
@@ -24,14 +28,14 @@ final class CodeIgniterTarget extends PerfTarget {
     } else {
       shell_exec(
         $this->safeCommand(
-          Vector {
+          array (
             'tar',
             '-C',
             $this->options->tempDir,
             '-zxf',
-            __DIR__.'/CodeIgniter-2.2.0.tar.gz',
-          },
-        ),
+            __DIR__.'/CodeIgniter-2.2.0.tar.gz'
+          )
+        )
       );
     }
 
@@ -40,7 +44,7 @@ final class CodeIgniterTarget extends PerfTarget {
     $index = str_replace(
       "define('ENVIRONMENT', 'development')",
       "define('ENVIRONMENT', 'production')",
-      $index,
+      $index
     );
     file_put_contents($index_path, $index);
   }

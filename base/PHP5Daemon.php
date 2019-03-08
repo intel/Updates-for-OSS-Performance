@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,9 +9,11 @@
  */
 
 final class PHP5Daemon extends PHPEngine {
-  private PerfTarget $target;
+  private $target;
+  private $options;
 
-  public function __construct(private PerfOptions $options) {
+  public function __construct(PerfOptions $options) {
+    $this->options = $options;
     $this->target = $options->getTarget();
     parent::__construct((string) $options->php5);
 
@@ -19,45 +21,43 @@ final class PHP5Daemon extends PHPEngine {
       $output = [];
       $check_command = implode(
         ' ',
-        (Vector {
-           $options->php5,
-           '-i',
-           '-c',
-           OSS_PERFORMANCE_ROOT.'/conf',
-         })->map($x ==> escapeshellarg($x)),
-      );
+        array_map(function($x) { return escapeshellarg($x); },
+	                                array(
+					$options->php5,
+                                        '-i',
+                                        '-c',
+                                        OSS_PERFORMANCE_ROOT.'/conf')));
 
       // Basic check for opcode caching.
       if ($options->traceSubProcess) {
         fprintf(STDERR, "%s\n", $check_command);
       }
-      exec($check_command, &$output);
+      exec($check_command, $output);
       $check = array_search('Opcode Caching => Up and Running', $output, true);
-      invariant($check, 'Got invalid output from php-fpm -i');
+      assert($check, 'Got invalid output from php-fpm -i');
     } else {
       $output = [];
       $check_command = implode(
         ' ',
-        (Vector {
-           $options->php5,
-           '-q',
-           '-c',
-           OSS_PERFORMANCE_ROOT.'/conf',
-           __dir__.'/php-src_config_check.php',
-         })->map($x ==> escapeshellarg($x)),
-      );
+        array_map(function($x) { return escapeshellarg($x); },
+	                                array(
+					$options->php5,
+                                        '-q',
+                                        '-c',
+                                        OSS_PERFORMANCE_ROOT.'/conf',
+                                        __dir__.'/php-src_config_check.php')));
 
       if ($options->traceSubProcess) {
         fprintf(STDERR, "%s\n", $check_command);
       }
-      exec($check_command, &$output);
+      exec($check_command, $output);
       $checks = json_decode(implode("\n", $output), /* as array = */ true);
-      invariant($checks, 'Got invalid output from php-src_config_check.php');
+      assert($checks, 'Got invalid output from php-src_config_check.php');
       BuildChecker::Check(
         $options,
         (string) $options->php5,
         $checks,
-        Set {'PHP_VERSION', 'PHP_VERSION_ID'},
+        array ('PHP_VERSION', 'PHP_VERSION_ID')
       );
     }
   }
@@ -66,11 +66,11 @@ final class PHP5Daemon extends PHPEngine {
     parent::startWorker(
       $this->options->daemonOutputFileName('php5'),
       $this->options->delayProcessLaunch,
-      $this->options->traceSubProcess,
+      $this->options->traceSubProcess
     );
   }
 
-  protected function getArguments(): Vector<string> {
+  protected function getArguments() {
     if ($this->options->cpuBind) {
       $this->cpuRange = $this->options->daemonProcessors;
     }
@@ -95,20 +95,20 @@ final class PHP5Daemon extends PHPEngine {
       );
       file_put_contents($path, $config);
 
-      $args = Vector {
+      $args = array (
         '-F',
         '--fpm-config',
         $path,
         '-c',
-        OSS_PERFORMANCE_ROOT.'/conf/',
-      };
+        OSS_PERFORMANCE_ROOT.'/conf/'
+);
     } else {
-      $args = Vector {
+      $args = array (
         '-b',
         '127.0.0.1:'.PerfSettings::BackendPort(),
         '-c',
-        OSS_PERFORMANCE_ROOT.'/conf/',
-      };
+        OSS_PERFORMANCE_ROOT.'/conf/'
+);
     }
 
     if (count($this->options->phpExtraArguments) > 0) {
@@ -159,12 +159,12 @@ final class PHP5Daemon extends PHPEngine {
            (bool) preg_match('/php.*-fpm/', readlink($exe));
   }
 
-  protected function getEnvironmentVariables(): Map<string, string> {
-    return Map {
+  protected function getEnvironmentVariables() {
+    return array(
       'OSS_PERF_TARGET' => (string) $this->target,
       'PHP_FCGI_CHILDREN' => (string) $this->options->phpFCGIChildren,
-      'PHP_FCGI_MAX_REQUESTS' => '0',
-    };
+      'PHP_FCGI_MAX_REQUESTS' => '0'
+    );
   }
 
   public function __toString(): string {

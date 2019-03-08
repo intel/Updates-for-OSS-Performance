@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -10,10 +10,15 @@
 
 final class NginxDaemon extends Process {
 
+  private $options;
+  private $target;
+
   public function __construct(
-    private PerfOptions $options,
-    private PerfTarget $target,
+    PerfOptions $options,
+    PerfTarget $target
   ) {
+    $this->options = $options;
+    $this->target = $target;
     parent::__construct($this->options->nginx);
   }
 
@@ -21,15 +26,15 @@ final class NginxDaemon extends Process {
     parent::startWorker(
       $this->options->daemonOutputFileName('nginx'),
       $this->options->delayProcessLaunch,
-      $this->options->traceSubProcess,
+      $this->options->traceSubProcess
     );
   }
 
   public function clearAccessLog(): void {
     $log = $this->options->tempDir.'/access.log';
-    invariant(
+    assert(
       file_exists($log),
-      'access log does not exist, but attempted to clear it',
+      'access log does not exist, but attempted to clear it'
     );
     $pid = $this->getPid();
     if ($pid !== null) {
@@ -38,13 +43,13 @@ final class NginxDaemon extends Process {
     }
   }
 
-  public function collectStats(): Map<string, Map<string, num>> {
+  public function collectStats() {
     $combined_codes = [];
     $combined_hits = 0;
     $combined_time = 0;
     $combined_bytes = 0;
 
-    $page_results = Map {};
+    $page_results = [];
 
     // Custom format: '$status $body_bytes_sent $request_time "$request"'
     $log = file_get_contents($this->options->tempDir.'/access.log');
@@ -54,17 +59,17 @@ final class NginxDaemon extends Process {
       $request = explode('"', $entry)[1];
       $entries_by_request[$request][] = $entry;
     }
-    $combined_times = Vector {};
+    $combined_times = [];
 
     foreach ($entries_by_request as $request => $entries) {
       $request_hits = count($entries);
       $combined_hits += $request_hits;
-      $page_results[$request] = Map {
+      $page_results[$request] = array (
         'Nginx hits' => $request_hits,
         'Nginx avg bytes' => 0,
         'Nginx avg time' => 0,
-      };
-      $times = Vector {};
+      );
+      $times = [];
 
       foreach ($entries as $entry) {
         $parts = explode(' ', $entry);
@@ -79,7 +84,7 @@ final class NginxDaemon extends Process {
         $page_results[$request]['Nginx avg bytes'] += $bytes;
         $page_results[$request]['Nginx avg time'] += $time;
         $code_key = 'Nginx '.$code;
-        if ($page_results[$request]->containsKey($code_key)) {
+        if (array_key_exists($code_key, $page_results[$request])) {
           $page_results[$request][$code_key]++;
         } else {
           $page_results[$request][$code_key] = 1;
@@ -88,32 +93,34 @@ final class NginxDaemon extends Process {
       $page_results[$request]['Nginx avg bytes'] /= (float) $request_hits;
       $page_results[$request]['Nginx avg time'] /= (float) $request_hits;
 
-      $page_results[$request]->setAll(self::GetPercentiles($times));
+      //$page_results[$request]->setAll(self::GetPercentiles($times));
+      $page_results[$request] = array_replace($page_results[$request],self::GetPercentiles($times));
     }
 
-    $page_results['Combined'] = Map {
+    $page_results['Combined'] = array (
       'Nginx hits' => $combined_hits,
       'Nginx avg bytes' => ((float) $combined_bytes) / $combined_hits,
       'Nginx avg time' => ((float) $combined_time) / $combined_hits,
-    };
-    $page_results['Combined']->setAll(self::GetPercentiles($combined_times));
+    );
+    //$page_results['Combined']->setAll(self::GetPercentiles($combined_times));
+    $page_results['Combined'] = array_replace($page_results['Combined'],self::GetPercentiles($combined_times));
     foreach ($combined_codes as $code => $count) {
       $page_results['Combined']['Nginx '.$code] = $count;
     }
     return $page_results;
   }
 
-  <<__Override>>
+  //<<__Override>>
   protected function getPidFilePath(): string {
     return $this->options->tempDir.'/nginx.pid';
   }
 
-  <<__Override>>
-  protected function getArguments(): Vector<string> {
+  //<<__Override>>
+  protected function getArguments() {
     if ($this->options->cpuBind) {
       $this->cpuRange = $this->options->helperProcessors;
     }
-    return Vector {
+    return array (
       '-c',
       $this->getGeneratedConfigFile(),
       //
@@ -122,7 +129,7 @@ final class NginxDaemon extends Process {
       //
       '-g',
       'daemon off;',
-    };
+    );
   }
 
   protected function getGeneratedConfigFile(): string {
@@ -131,22 +138,22 @@ final class NginxDaemon extends Process {
     if ($this->options->proxygen) {
       $proxy_pass = sprintf(
         'proxy_pass http://127.0.0.1:%d$request_uri',
-        PerfSettings::BackendPort(),
+        PerfSettings::BackendPort()
       );
       $admin_proxy_pass = sprintf(
         'proxy_pass http://127.0.0.1:%d$request_uri',
-        PerfSettings::BackendAdminPort(),
+        PerfSettings::BackendAdminPort()
       );
     } else {
       $proxy_pass =
         sprintf('fastcgi_pass 127.0.0.1:%d', PerfSettings::BackendPort());
       $admin_proxy_pass = sprintf(
         'fastcgi_pass 127.0.0.1:%d',
-        PerfSettings::BackendAdminPort(),
+        PerfSettings::BackendAdminPort()
       );
     }
 
-    $substitutions = Map {
+    $substitutions = array (
       '__HTTP_PORT__' => PerfSettings::HttpPort(),
       '__HTTP_ADMIN_PORT__' => PerfSettings::HttpAdminPort(),
       '__BACKEND_PORT__' => PerfSettings::BackendPort(),
@@ -160,8 +167,8 @@ final class NginxDaemon extends Process {
         (int) $this->options->maxdelayNginxFastCGI,
       '__FRAMEWORK_ROOT__' => $this->target->getSourceRoot(),
       '__NGINX_PID_FILE__' => $this->getPidFilePath(),
-      '__DATE__' => date(DATE_W3C),
-    };
+      '__DATE__' => date(DATE_W3C)
+    );
 
     $config =
       file_get_contents(OSS_PERFORMANCE_ROOT.'/conf/nginx/nginx.conf.in');
@@ -174,15 +181,15 @@ final class NginxDaemon extends Process {
   }
 
   private static function GetPercentiles(
-    Vector<float> $times,
-  ): Map<string, float> {
+    array $times
+  ) {
     $count = count($times);
-    sort(&$times);
-    return Map {
+    sort($times);
+    return array (
       'Nginx P50 time' => $times[(int) ($count * 0.5)],
       'Nginx P90 time' => $times[(int) ($count * 0.9)],
       'Nginx P95 time' => $times[(int) ($count * 0.95)],
-      'Nginx P99 time' => $times[(int) ($count * 0.99)],
-    };
+      'Nginx P99 time' => $times[(int) ($count * 0.99)]
+    );
   }
 }

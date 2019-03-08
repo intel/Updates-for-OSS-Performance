@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,7 +9,11 @@
  */
 
 final class Drupal7Target extends PerfTarget {
-  public function __construct(private PerfOptions $options) {}
+  private $options;
+
+  public function __construct(PerfOptions $options) {
+    $this->options = $options;
+  }
 
   protected function getSanityCheckString(): string {
     return 'Read more';
@@ -22,17 +26,17 @@ final class Drupal7Target extends PerfTarget {
     } else {
       Utils::ExtractTar(
         __DIR__.'/drupal-7.31.tar.gz',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
       Utils::ExtractTar(
         __DIR__.'/demo-static.tar.bz2',
-        $this->getSourceRoot().'/sites/default',
+        $this->getSourceRoot().'/sites/default'
       );
     }
 
     copy(
       'compress.zlib://'.__DIR__.'/settings.php.gz',
-      $this->getSourceRoot().'/sites/default/settings.php',
+      $this->getSourceRoot().'/sites/default/settings.php'
     );
 
     $file = $this->getSourceRoot().'/sites/default/settings.php';

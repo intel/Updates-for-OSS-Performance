@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,9 +9,11 @@
  */
 
 final class Magento1Target extends PerfTarget {
-  private DatabaseInstaller $installer;
+  private $installer;
+  private $options;
 
-  public function __construct(private PerfOptions $options) {
+  public function __construct(PerfOptions $options) {
+    $this->options = $options;
     $options->dumpIsCompressed = false;
     $this->installer = new DatabaseInstaller($this->options);
     $this->installer->setDatabaseName($this->getDatabaseName());
@@ -40,8 +42,8 @@ final class Magento1Target extends PerfTarget {
     foreach (array('media', 'var') as $dir) {
       shell_exec(
         $this->safeCommand(
-          Vector {'chmod', '-R', 'o+w', $this->getSourceRoot().'/'.$dir},
-        ),
+          array ('chmod', '-R', 'o+w', $this->getSourceRoot().'/'.$dir)
+        )
       );
     }
   }
@@ -49,7 +51,7 @@ final class Magento1Target extends PerfTarget {
   private function installSampleData(): bool {
     Utils::ExtractTar(
       __DIR__.'/magento-sample-data-1.9.0.0.tar.gz',
-      $this->options->tempDir,
+      $this->options->tempDir
     );
 
     foreach (array('skin', 'media') as $type) {
@@ -60,15 +62,15 @@ final class Magento1Target extends PerfTarget {
             'cp',
             '-Rf',
             $this->getSampleDataDirectory().'/'.$type.'/*',
-            $this->getSourceRoot().'/'.$type,
-          ),
-        ),
+            $this->getSourceRoot().'/'.$type
+         )
+        )
       );
     }
 
     $created_database = $this->installer->setDumpFile(
       $this->getSampleDataDirectory().
-      '/magento_sample_data_for_1.9.0.0.sql',
+      '/magento_sample_data_for_1.9.0.0.sql'
     )->installDatabase();
     if (!$created_database) {
       return false;
@@ -76,7 +78,6 @@ final class Magento1Target extends PerfTarget {
     return true;
   }
 
-  <<__Memoize>>
   private function getSampleDataDirectory(): string {
     return $this->options->tempDir.'/magento-sample-data-1.9.0.0';
   }
@@ -88,14 +89,14 @@ final class Magento1Target extends PerfTarget {
     } else {
       Utils::ExtractTar(
         __DIR__.'/magento-1.9.0.1.tar.gz',
-        $this->options->tempDir,
+        $this->options->tempDir
       );
     }
 
     if ($this->options->skipDatabaseInstall) {
       copy(
         __DIR__.'/local.xml',
-        $this->getSourceRoot().'/app/etc/local.xml',
+        $this->getSourceRoot().'/app/etc/local.xml'
       );
       $file = $this->getSourceRoot().'/app/etc/local.xml';
       $file_contents = file_get_contents($file);
@@ -117,14 +118,14 @@ final class Magento1Target extends PerfTarget {
         throw new Exception(
           sprintf(
             "Installation failed: %s\n",
-            implode(PHP_EOL, $installer->getErrors()),
-          ),
+            implode(PHP_EOL, $installer->getErrors())
+          )
         );
       }
       exit(0);
     }
     $status = null;
-    pcntl_waitpid($child, &$status);
+    pcntl_waitpid($child, $status);
   }
 
   private function getInstallerArgs(): array {
@@ -148,7 +149,7 @@ final class Magento1Target extends PerfTarget {
       'admin_email' => 'bench@mark.com',
       'admin_username' => 'benchmark',
       'admin_password' => 'p@ssw0rd',
-      'skip_url_validation' => 1,
+      'skip_url_validation' => 1
     );
   }
 

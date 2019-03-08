@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -10,9 +10,9 @@
 
 require_once ('base/cli-init.php');
 
-function perf_main(Vector<string> $argv): void {
+function perf_main($argv): void {
   $data = PerfRunner::RunWithArgv($argv);
   print json_encode($data, JSON_PRETTY_PRINT)."\n";
 }
 
-perf_main(new Vector($argv));
+perf_main($argv);

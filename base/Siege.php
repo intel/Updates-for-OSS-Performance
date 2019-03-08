@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -11,29 +11,38 @@
 final class Siege extends Process {
   use SiegeStats;
 
-  private ?string $logfile;
+  private $logfile;
+  private $options;
+  private $target;
+  private $mode;
+  private $time;
 
   public function __construct(
-    private PerfOptions $options,
-    private PerfTarget $target,
-    private RequestMode $mode,
-    private int $time = 60,
+    PerfOptions $options,
+    PerfTarget $target,
+    $mode,
+    $time = 60
   ) {
+    $this->options = $options;
+    $this->target = $target;
+    $this->mode = $mode;
+    $this->time = $time;
+
     parent::__construct($options->siege);
     $this->suppress_stdout = true;
 
     if (!$options->skipVersionChecks) {
       $version_line = trim(
         exec(
-          escapeshellarg($options->siege).' --version 2>&1 | head -n 1',
-        ),
+          escapeshellarg($options->siege).' --version 2>&1 | head -n 1'
+        )
       );
-      $bad_prefixes = Vector {
+      $bad_prefixes = array (
         'SIEGE 3.0',
         'SIEGE 4.0.0',
         'SIEGE 4.0.1',
-        'SIEGE 4.0.2',
-      };
+        'SIEGE 4.0.2'
+);
       foreach ($bad_prefixes as $bad_prefix) {
         if (substr($version_line, 0, strlen($bad_prefix)) === $bad_prefix) {
           fprintf(
@@ -45,7 +54,7 @@ final class Siege extends Process {
             "You can specify a path to a proper siege version with the ".
             "--siege=/path/to/siege option. If you have patched siege to fix ".
             "these issues, pass --skip-version-checks.\n",
-            $version_line,
+            $version_line
           );
           exit(1);
         }
@@ -68,11 +77,10 @@ final class Siege extends Process {
     parent::startWorker(
       $this->options->daemonOutputFileName('siege'),
       $this->options->delayProcessLaunch,
-      $this->options->traceSubProcess,
+      $this->options->traceSubProcess
     );
   }
 
-  <<__Override>>
   public function getExecutablePath(): string {
     if ($this->options->remoteSiege) {
       if ($this->options->noTimeLimit) {
@@ -89,8 +97,7 @@ final class Siege extends Process {
     return 'timeout';
   }
 
-  <<__Override>>
-  protected function getArguments(): Vector<string> {
+  protected function getArguments() {
     if ($this->options->cpuBind) {
       $this->cpuRange = $this->options->helperProcessors;
     }
@@ -108,7 +115,7 @@ final class Siege extends Process {
       $urls_file = $this->options->siegeTmpDir . '/' . basename($urls_file);
     }
 
-    $arguments = Vector {};
+    $arguments = [];
     if (!$this->options->noTimeLimit) {
       $timeout = 4 * 60; // 4 minutes
       if ($this->mode == RequestModes::BENCHMARK) {
@@ -116,27 +123,26 @@ final class Siege extends Process {
       } else {
         $timeout += $this->time;
       }
-      $arguments = Vector {
+      $arguments = array (
         // See Siege::getExecutablePath()  - these arguments get passed to
         // timeout
         '--signal=9',
         (string) $timeout,
         parent::getExecutablePath(),
-      };
+      );
     }
     $siege_rc = $this->target->getSiegeRCPath();
     if ($siege_rc !== null) {
-      $arguments->addAll(Vector {'-R', $siege_rc});
+      array_push($arguments,'-R', $siege_rc);
     }
 
     if (!$this->options->fetchResources) {
-      $arguments->add('--no-parser');
+       array_push($arguments,'--no-parser');
     }
 
     switch ($this->mode) {
       case RequestModes::WARMUP:
-        $arguments->addAll(
-          Vector {
+        array_push($arguments,
             '-c',
             (string) PerfSettings::WarmupConcurrency(),
             '-r',
@@ -144,13 +150,11 @@ final class Siege extends Process {
             '-f',
             $urls_file,
             '--benchmark',
-            '--log=/dev/null',
-          },
+            '--log=/dev/null'
         );
         return $arguments;
       case RequestModes::WARMUP_MULTI:
-        $arguments->addAll(
-          Vector {
+        array_push($arguments,
             '-c',
             $this->options->clientThreads,
             '-t',
@@ -158,8 +162,7 @@ final class Siege extends Process {
             '-f',
             $urls_file,
             '--benchmark',
-            '--log=/dev/null',
-          },
+            '--log=/dev/null'
         );
         return $arguments;
       case RequestModes::BENCHMARK:
@@ -169,34 +172,32 @@ final class Siege extends Process {
         } else {
           $logfile = $this->logfile;
         }
-        $arguments->addAll(
-          Vector {
+        array_push($arguments,
             '-c',
             $this->options->clientThreads,
             '-f',
             $urls_file,
             '--benchmark',
-            '--log='.$logfile,
-          },
+            '--log='.$logfile
         );
 
-        if (!$this->options->noTimeLimit) {
-          $arguments->add('-t');
-          $arguments->add(((string)$this->options->benchmarkTime).'S');
+	if (!$this->options->noTimeLimit) {
+	  array_push($arguments, '-t');
+	  array_push($arguments, (((string)$this->options->benchmarkTime).'S'));
         }
         return $arguments;
       default:
-        invariant_violation(
-          'Unexpected request mode: %s', (string) $this->mode,
+        echo(
+          'Unexpected request mode: %s'. $this->mode
         );
     }
   }
 
   protected function getLogFilePath(): string {
     $logfile = $this->logfile;
-    invariant(
+    assert(
       $logfile !== null,
-      'Tried to get log file path without a logfile',
+      'Tried to get log file path without a logfile'
     );
     return $logfile;
   }

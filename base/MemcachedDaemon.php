@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2017, Facebook, Inc.
  *  All rights reserved.
@@ -10,12 +10,16 @@
  */
 final class MemcachedDaemon extends Process {
 
-  private int $maxMemory = 2048;
+  private $maxMemory = 2048;
+  private $options;
+  private $target;
 
   public function __construct(
-    private PerfOptions $options,
-    private PerfTarget $target,
+    PerfOptions $options,
+    PerfTarget $target
   ) {
+    $this->options = $options;
+    $this->target = $target;
     parent::__construct($this->options->memcached);
   }
 
@@ -23,7 +27,7 @@ final class MemcachedDaemon extends Process {
     parent::startWorker(
       $this->options->daemonOutputFileName('memcached'),
       $this->options->delayProcessLaunch,
-      $this->options->traceSubProcess,
+      $this->options->traceSubProcess
     );
   }
 
@@ -34,9 +38,9 @@ final class MemcachedDaemon extends Process {
         return $this->options->memcachedThreads;
     }
 
-    exec('nproc', &$output, &$ret);
+    exec('nproc', $output, $ret);
     if ($ret != 0) {
-       invariant_violation('%s', 'Execution of nproc failed');
+       echo "%s. 'Execution of nproc failed'\n";
        exit(1);
     }
     $numProcs = (int)($output[0]);
@@ -49,17 +53,15 @@ final class MemcachedDaemon extends Process {
     return 32;
   }
 
-  <<__Override>>
   protected function getPidFilePath(): string {
     return $this->options->tempDir.'/memcached.pid';
   }
 
-  <<__Override>>
-  protected function getArguments(): Vector<string> {
+  protected function getArguments() {
     if ($this->options->cpuBind) {
       $this->cpuRange = $this->options->helperProcessors;
     }
-    return Vector {
+    return array (
       '-m',
       (string) $this->maxMemory,
       '-l',
@@ -70,6 +72,6 @@ final class MemcachedDaemon extends Process {
       (string) $this->options->memcachedPort,
       '-P', # pid file
       $this->getPidFilePath()
-    };
+    );
   }
 }

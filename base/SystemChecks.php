@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -18,7 +18,7 @@ class SystemChecks {
   }
 
   private static function CheckNotRoot(): void {
-    invariant(getmyuid() !== 0, 'Run this script as a regular user.');
+    assert(getmyuid() !== 0, 'Run this script as a regular user.');
   }
 
   private static function CheckForAuditd(PerfOptions $options): void {
@@ -33,16 +33,14 @@ class SystemChecks {
         fprintf(
           STDERR,
           "WARNING: auditd is running, and can significantly skew ".
-          "benchmark and profiling results. Please disable it.\n",
+          "benchmark and profiling results. Please disable it.\n"
         );
         sleep(3);
         return;
       }
-      invariant_violation(
-        "auditd is running, and can significantly skew benchmark and ".
+      echo "auditd is running, and can significantly skew benchmark and ".
         "profiling results. Either disable it, or pass ".
-        "--i-am-not-benchmarking to continue anyway.",
-      );
+        "--i-am-not-benchmarking to continue anyway.\n";
     }
   }
 
@@ -52,9 +50,9 @@ class SystemChecks {
       return;
     }
     $enabled = trim(file_get_contents($f)) === '1';
-    invariant(
+    assert(
       $enabled,
-      'TCP TIME_WAIT socket re-use must be enabled - see time_wait.md for details',
+      'TCP TIME_WAIT socket re-use must be enabled - see time_wait.md for details'
     );
   }
 
@@ -72,26 +70,26 @@ class SystemChecks {
         continue;
       }
       $gov = trim(file_get_contents($gov_file));
-      invariant(
+      assert(
         $gov === 'performance',
-        'Unsuitable CPU speed policy - see cpufreq.md',
+        'Unsuitable CPU speed policy - see cpufreq.md'
       );
     }
   }
 
   private static function CheckPortAvailability(PerfOptions $options): void {
-    $ports = Vector {
+    $ports = array (
       PerfSettings::HttpPort(),
       PerfSettings::HttpAdminPort(),
       PerfSettings::BackendPort(),
-      PerfSettings::BackendAdminPort(),
-    };
+      PerfSettings::BackendAdminPort()
+    );
     if ($options->useMemcached &&
         $options->getTarget()->supportsMemcached()) {
       $ports[] = $options->memcachedPort;
     }
 
-    $busy_ports = Vector {};
+    $busy_ports = [];
     foreach ($ports as $port) {
       $result = @fsockopen('localhost', $port);
       if ($result !== false) {
@@ -104,8 +102,8 @@ class SystemChecks {
         STDERR,
         "Ports %s are required, but already in use. You can find out what ".
         "processes are using them with:\n  sudo lsof -P %s\n",
-        implode(', ', $busy_ports),
-        implode(' ', $busy_ports->map($x ==> '-i :'.$x)),
+	implode(', ', $busy_ports),
+        implode(' ', array_map(function($x) { return '-i :'.$x; },$busy_ports))
       );
       exit(1);
     }

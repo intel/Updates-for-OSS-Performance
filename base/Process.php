@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,16 +9,17 @@
  */
 
 abstract class Process {
-  protected ?resource $process;
-  protected ?resource $stdin;
-  protected ?resource $stdout;
-  protected ?string $command;
-  protected ?string $cpuRange = null;
-  protected bool $suppress_stdout = false;
+  protected $process=null;
+  protected $stdin;
+  protected $stdout;
+  protected $command;
+  protected $cpuRange = null;
+  protected $suppress_stdout = false;
+  private $executablePath;
+  private static $processes = [];
 
-  private static Vector<Process> $processes = Vector {};
-
-  public function __construct(private string $executablePath) {
+  public function __construct(string $executablePath) {
+    $this->executablePath = $executablePath;
     self::$processes[] = $this;
   }
 
@@ -26,12 +27,12 @@ abstract class Process {
     foreach (self::$processes as $process) {
       $process->__destruct();
     }
-    self::$processes = Vector {};
+    self::$processes = [];
   }
 
-  abstract protected function getArguments(): Vector<string>;
-  protected function getEnvironmentVariables(): Map<string, string> {
-    return Map {};
+  abstract protected function getArguments();
+  protected function getEnvironmentVariables() {
+    return [];
   }
 
   public function getExecutablePath(): string {
@@ -43,14 +44,14 @@ abstract class Process {
   public function startWorker(
     ?string $outputFileName = null,
     float $delayProcessLaunch = 0.5,
-    bool $trace = false,
+    bool $trace = false
   ): void {
-    $executable = $this->getExecutablePath();
-
+  $executable = $this->getExecutablePath();
+    $curr_args = $this->getArguments();
     $this->command =
       $executable.
       ' '.
-      implode(' ', $this->getArguments()->map($x ==> escapeshellarg($x)));
+      implode(' ', array_map(function($x){ return escapeshellarg($x); }, $curr_args));
     if ($this->suppress_stdout) {
       $this->command .= ' >/dev/null';
     }
@@ -67,8 +68,9 @@ abstract class Process {
       // not currently using file descriptor 2 (stderr)
       ];
     $pipes = [];
-    $env = new Map($_ENV);
-    $env->setAll($this->getEnvironmentVariables());
+    $env  = $_ENV;
+    $current_env = $this->getEnvironmentVariables();
+    $env = array_merge($env,$current_env);
 
     if ($trace) {
       if ($use_pipe) {
@@ -77,16 +79,14 @@ abstract class Process {
         fprintf(STDERR, "%s >> %s\n", $this->command, $outputFileName);
       }
     }
-
-    $proc = proc_open($this->command, $spec, &$pipes, null, $env);
+    $proc = proc_open($this->command, $spec, $pipes, null, $env);
 
     // Give the shell some time to figure out if it could actually launch the
     // process
     Process::sleepSeconds($delayProcessLaunch);
-    invariant(
+    assert(
       $proc && proc_get_status($proc)['running'] === true,
-      'failed to start process: %s',
-      $this->command,
+      'failed to start process:'.$this->command
     );
 
     $this->process = $proc;
@@ -124,7 +124,7 @@ abstract class Process {
     }
   }
 
-  final protected function waitForStop(num $max_time, num $interval): bool {
+  final protected function waitForStop($max_time, $interval): bool {
     for (
       $elapsed = 0;
       $elapsed < $max_time && $this->isRunning();
@@ -162,7 +162,7 @@ abstract class Process {
       return;
     }
     $status = null;
-    pcntl_waitpid($pid, &$status);
+    pcntl_waitpid($pid, $status);
   }
 
   public function __destruct() {

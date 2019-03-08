@@ -24,10 +24,10 @@ Usage
 
 As a regular user:
 
-    hhvm composer.phar install # see https://getcomposer.org/download/
-    hhvm perf.php --wordpress --php5=/path/to/bin/php-cgi # also works with php7
-    hhvm perf.php --wordpress --php=/path/to/bin/php-fpm # also works with php7
-    hhvm perf.php --wordpress --hhvm=/path/to/hhvm
+    php composer.phar install # see https://getcomposer.org/download/
+    php perf.php --wordpress --php5=/path/to/bin/php-cgi # also works with php7
+    php perf.php --wordpress --php=/path/to/bin/php-fpm # also works with php7
+    php perf.php --wordpress --hhvm=/path/to/hhvm
 
 Running with --hhvm gives some additional server-side statistics. It is usual
 for HHVM to report more requests than siege - some frameworks do call-back
@@ -49,7 +49,7 @@ See batch-run.json.example to get an idea of how to create batch-run.json.
 Requirements
 ============
 
-On Ubuntu you can run scripts/setup.sh.  This should provision your machine with
+On Ubuntu you can run scripts/setup.sh. This should provision your machine with
 everything you need to begin running the benchmarks.
 
 This installs:
@@ -60,6 +60,9 @@ This installs:
 - unzip
 - A mysql server on 127.0.0.1:3306
 - hhvm
+
+You need to set 'variables_order = "GPCSE"' in your php.ini to get \_ENV functional.
+Note that php asserts are disabled by default.
 
 I've been using the current versions available from yum on Centos 6.3. HHVM is
 required as this is written in Hack.
@@ -202,14 +205,14 @@ Perf
 ----
 perf.php can keep the suite running indefinitely:
 
-    hhvm perf.php --i-am-not-benchmarking --no-time-limit --wordpress --hhvm=$HHVM_BIN
+    php perf.php --i-am-not-benchmarking --no-time-limit --wordpress --hhvm=$HHVM_BIN
 
 You can then attach 'perf' or another profiler to the running HHVM or php-cgi process, once the 'benchmarking'
 phase has started.
 
 There is also a script to run perf for you at the apropriate moment:
 
-    hhvm perf.php --i-am-not-benchmarking --wordpress --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles"
+    php perf.php --i-am-not-benchmarking --wordpress --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles"
 
 This will record 25 seconds of samples.  To see where most time is spent you can
 dive into the data using perf, or use the perf rollup script as follows:
@@ -228,13 +231,13 @@ To capture all relevant counters, run the benchmark as follows:
 NOTE: perf.sh uses sudo, so look for the password prompt or disable it.
 
     # Just cycles
-    hhvm perf.php --i-am-not-benchmarking --mediawiki --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles" --tcprint
-    
+    php perf.php --i-am-not-benchmarking --mediawiki --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles" --tcprint
+
     # All supported perf event types (Intel)
-    hhvm perf.php --i-am-not-benchmarking --mediawiki --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles,branch-misses,L1-icache-misses,L1-dcache-misses,cache-misses,LLC-store-misses,iTLB-misses,dTLB-misses" --tcprint
-    
+    php perf.php --i-am-not-benchmarking --mediawiki --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles,branch-misses,L1-icache-misses,L1-dcache-misses,cache-misses,LLC-store-misses,iTLB-misses,dTLB-misses" --tcprint
+
     # All supported perf event types (ARM doesn't have LLC-store-misses)
-    hhvm perf.php --i-am-not-benchmarking --mediawiki --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles,branch-misses,L1-icache-misses,L1-dcache-misses,cache-misses,iTLB-misses,dTLB-misses" --tcprint
+    php perf.php --i-am-not-benchmarking --mediawiki --hhvm=$HHVM_BIN --exec-after-warmup="./scripts/perf.sh -e cycles,branch-misses,L1-icache-misses,L1-dcache-misses,cache-misses,iTLB-misses,dTLB-misses" --tcprint
 
 In order to have all the symbols from the the translation cache you
 may need to change the owner of /tmp/perf-<PID>.map to root.

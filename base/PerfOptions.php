@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -9,86 +9,86 @@
  */
 
 final class PerfOptions {
-  public bool $help;
-  public bool $verbose;
+  public $help;
+  public $verbose;
 
   //
   // Exactly one of php5 or hhvm must be set with the path
   // to the corresponding executable.  The one that is set
   // determines what kind of cgi server is run.
   //
-  public ?string $php5;
-  public ?string $hhvm;
+  public $php5;
+  public $hhvm;
 
   // When running with php, this enables fpm cgi.
-  public bool $fpm = false;
+  public $fpm = false;
 
   //
   // setUpTest and tearDownTest are called before and after each
   // individual invocation of the $php5 or $hhvm
   //
-  public ?string $setUpTest;
-  public ?string $tearDownTest;
+  public $setUpTest;
+  public $tearDownTest;
 
-  public array $hhvmExtraArguments;
-  public array $phpExtraArguments;
+  public $hhvmExtraArguments;
+  public $phpExtraArguments;
 
-  public int $phpFCGIChildren;
+  public $phpFCGIChildren;
 
-  public string $siege;
-  public string $nginx;
-  public string $memcached;
+  public $siege;
+  public $nginx;
+  public $memcached;
 
-  public ?string $dbUsername;
-  public ?string $dbPassword;
+  public $dbUsername;
+  public $dbPassword;
 
-  public bool $cpuBind = false;
-  public ?string $daemonProcessors;
-  public ?string $helperProcessors;
+  public $cpuBind = false;
+  public $daemonProcessors;
+  public $helperProcessors;
 
-  public bool $fetchResources = false;
-  public bool $forceInnodb = false;
-  public bool $skipSanityCheck = false;
-  public bool $skipWarmUp = false;
-  public bool $skipVersionChecks = false;
-  public bool $skipDatabaseInstall = false;
-  public bool $dumpIsCompressed = true;
-  public bool $traceSubProcess = false;
-  public bool $noTimeLimit = false;
+  public $fetchResources = false;
+  public $forceInnodb = false;
+  public $skipSanityCheck = false;
+  public $skipWarmUp = false;
+  public $skipVersionChecks = false;
+  public $skipDatabaseInstall = false;
+  public $dumpIsCompressed = true;
+  public $traceSubProcess = false;
+  public $noTimeLimit = false;
 
   // Pause once benchmarking is complete to allow for manual inspection of the
   // HHVM or PHP process.
-  public bool $waitAtEnd = false;
+  public $waitAtEnd = false;
   // Pause after the warmup is completed to get relevant data when profiling
-  public bool $waitAfterWarmup = false;
+  public $waitAfterWarmup = false;
 
   //
   // HHVM specific options to enable RepoAuthoritative mode and the static
   // content cache, as well as selecting the PCRE caching mode.
   //
-  public bool $precompile = false;
-  public bool $filecache = false;
-  public ?string $pcreCache;
-  public ?int $pcreSize;
-  public ?int $pcreExpire;
-  public bool $allVolatile = false;
-  public bool $interpPseudomains = false;
-  public bool $proxygen = false;
-  public bool $jit = false;
-  public bool $statCache = false;
+  public $precompile = false;
+  public $filecache = false;
+  public $pcreCache;
+  public $pcreSize;
+  public $pcreExpire;
+  public $allVolatile = false;
+  public $interpPseudomains = false;
+  public $proxygen = false;
+  public $jit = false;
+  public $statCache = false;
 
   //
   // HHVM specific options for generating performance data and profiling
   // information.
   //
-  public bool $tcprint = false;
-  public bool $pcredump = false;
-  public bool $profBC = false;
-  public bool $warmupStats = false;
+  public $tcprint = false;
+  public $pcredump = false;
+  public $profBC = false;
+  public $warmupStats = false;
 
-  public bool $applyPatches = false;
+  public $applyPatches = false;
 
-  public bool $useMemcached = true;
+  public $useMemcached = true;
 
   //
   // All times are given in seconds, stored in a float.
@@ -98,48 +98,49 @@ final class PerfOptions {
   // such as nginx, times may be truncated to the nearest integer value,
   // in order to accomodate inflexibility in the 3rd party software.
   //
-  public float $delayNginxStartup;
-  public float $delayPhpStartup;
-  public float $delayMemcachedStartup;
-  public float $delayProcessLaunch; // secs to wait after start process
-  public float $delayCheckHealth; // secs to wait before hit /check-health
+  public $delayNginxStartup;
+  public $delayPhpStartup;
+  public $delayMemcachedStartup;
+  public $delayProcessLaunch; // secs to wait after start process
+  public $delayCheckHealth; // secs to wait before hit /check-health
   // in secs, store as int
-  public int $benchmarkTime;
+  public $benchmarkTime;
 
   //
   // Maximum wait times, as for example given to file_get_contents
   // or the configuration file for nginx.  These times may be truncated
   // to the nearest integral second to accomodate the specific server.
   //
-  public float $maxdelayUnfreeze;
-  public float $maxdelayAdminRequest;
-  public float $maxdelayNginxKeepAlive;
-  public float $maxdelayNginxFastCGI;
+  public $maxdelayUnfreeze;
+  public $maxdelayAdminRequest;
+  public $maxdelayNginxKeepAlive;
+  public $maxdelayNginxFastCGI;
 
-  public bool $daemonOutputToFile = false;
-  public string $tempDir;
-  public ?string $srcDir;
+  public $daemonOutputToFile = false;
+  public $tempDir;
+  public $srcDir;
 
-  public ?string $scriptBeforeWarmup;
-  public ?string $scriptAfterWarmup;
-  public ?string $scriptAfterBenchmark;
-  public string $serverThreads = '100';
-  public string $clientThreads = '200';
+  public $scriptBeforeWarmup;
+  public $scriptAfterWarmup;
+  public $scriptAfterBenchmark;
+  public $serverThreads = '100';
+  public $clientThreads = '200';
 
-  public bool $notBenchmarking = false;
+  public $notBenchmarking = false;
 
-  public string $dbHost = '127.0.0.1'; //The hostname/IP of server which hosts the database.
-  public int $memcachedPort; //The hostname/IP of server which hosts memcached.
-  public int $memcachedThreads; // Number of memcached threads
+  public $dbHost = '127.0.0.1'; //The hostname/IP of server which hosts the database.
+  public $memcachedPort; //The hostname/IP of server which hosts memcached.
+  public $memcachedThreads; // Number of memcached threads
 
-  private array $args;
-  private Vector<string> $notBenchmarkingArgs = Vector {};
+  private $args;
+  private $notBenchmarkingArgs = [];
 
-  public ?string $remoteSiege;
-  public ?string $siegeTmpDir;
+  public $remoteSiege;
+  public $siegeTmpDir;
 
-  public function __construct(Vector<string> $argv) {
-    $def = Vector {
+  //create a vector
+  public function __construct($argv) {
+    $def = array(
       'help',
       'verbose',
       'php:', // Uses FPM by default (see no-fpm).
@@ -206,10 +207,10 @@ final class PerfOptions {
       'remote-siege:',
       'memcached-port:',
       'memcached-threads:',
-      'no-memcached', // do not use memcached (even if target supports it)
-    };
-    $targets = $this->getTargetDefinitions()->keys();
-    $def->addAll($targets);
+      'no-memcached' // do not use memcached (even if target supports it)
+    );
+    $targets = array_keys($this->getTargetDefinitions());
+    $def=array_merge($def,$targets);
 
     $original_argv = $GLOBALS['argv'];
     $GLOBALS['argv'] = $argv;
@@ -228,39 +229,41 @@ final class PerfOptions {
         ">\n".
         "\n".
         "Options:\n%s",
-        $argv[0],
-        implode('', $def->map($x ==> '  --'.$x."\n")),
+	$argv[0],
+	implode('',
+	        array_map(function($x) { return '  --'.$x."\n"; },
+		$def))
       );
       exit(1);
     }
 
     $this->verbose = array_key_exists('verbose', $o);
 
-    $php5 = hphp_array_idx($o, 'php5', null);  // Will only use cgi.
-    $php = hphp_array_idx($o, 'php', null);  // Will use fpm by default.
+    $php5 = $this->hphp_array_idx($o, 'php5', null);  // Will only use cgi.
+    $php = $this->hphp_array_idx($o, 'php', null);  // Will use fpm by default.
     if ($php5 !== null) {
       $this->php5 = $php5;
     } else {
       $this->php5 = $php;
     }
-    $this->hhvm = hphp_array_idx($o, 'hhvm', null);
+    $this->hhvm = $this->hphp_array_idx($o, 'hhvm', null);
 
-    $this->setUpTest = hphp_array_idx($o, 'setUpTest', null);
-    $this->tearDownTest = hphp_array_idx($o, 'tearDownTest', null);
+    $this->setUpTest = $this->hphp_array_idx($o, 'setUpTest', null);
+    $this->tearDownTest = $this->hphp_array_idx($o, 'tearDownTest', null);
 
-    $this->dbUsername = hphp_array_idx($o, 'db-username', null);
-    $this->dbPassword = hphp_array_idx($o, 'db-password', null);
+    $this->dbUsername = $this->hphp_array_idx($o, 'db-username', null);
+    $this->dbPassword = $this->hphp_array_idx($o, 'db-password', null);
 
-    $this->siege = hphp_array_idx($o, 'siege', 'siege');
-    $this->nginx = hphp_array_idx($o, 'nginx', 'nginx');
-    $this->memcached = hphp_array_idx($o, 'memcached', 'memcached');
-    $this->memcachedPort = (int) hphp_array_idx($o, 'memcached-port', 11888);
-    $this->memcachedThreads = (int) hphp_array_idx($o, 'memcached-threads', 0);
+    $this->siege = $this->hphp_array_idx($o, 'siege', 'siege');
+    $this->nginx = $this->hphp_array_idx($o, 'nginx', 'nginx');
+    $this->memcached = $this->hphp_array_idx($o, 'memcached', 'memcached');
+    $this->memcachedPort = (int) $this->hphp_array_idx($o, 'memcached-port', 11888);
+    $this->memcachedThreads = (int) $this->hphp_array_idx($o, 'memcached-threads', 0);
 
     $isFacebook = array_key_exists('fbcode', $o);
     $fbcode = "";
     if ($isFacebook) {
-      $val = hphp_array_idx($o, 'fbcode', false);
+      $val = $this->hphp_array_idx($o, 'fbcode', false);
       if (is_string($val) && $val !== '') {
         $fbcode = $val;
       } else {
@@ -300,7 +303,7 @@ final class PerfOptions {
     if ($fraction !== 1.0) {
       $this->cpuBind = true;
       $output = [];
-      exec('nproc', &$output);
+      exec('nproc', $output);
       $numProcessors = (int)($output[0]);
       $numDaemonProcessors = (int)($numProcessors * $fraction);
       $this->helperProcessors = "$numDaemonProcessors-$numProcessors";
@@ -364,7 +367,7 @@ final class PerfOptions {
     }
 
     if (array_key_exists('client-threads', $o)) {
-      $this->clientThreads = $this->args['client-threads']; 
+      $this->clientThreads = $this->args['client-threads'];
     }
 
     if ($argTempDir === null) {
@@ -394,69 +397,64 @@ final class PerfOptions {
     if ($this->notBenchmarkingArgs && !$this->notBenchmarking) {
       $message = sprintf(
         "These arguments are invalid without --i-am-not-benchmarking: %s",
-        implode(' ', $this->notBenchmarkingArgs),
+        implode(' ', $this->notBenchmarkingArgs)
       );
       if (getenv("HHVM_OSS_PERF_BE_LENIENT")) {
         fprintf(STDERR, "*** WARNING ***\n%s\n", $message);
         $this->notBenchmarking = true;
       } else {
-        invariant_violation('%s', $message);
+        echo "$message\n";
         exit(1);
       }
     }
     if ($this->remoteSiege) {
       if (preg_match('*@*',$this->remoteSiege) === 0){
-       invariant_violation('%s',
-         'Please provide Siege remote host in the form of <user>@<host>');
+       echo "Please provide Siege remote host in the form of <user>@<host>\n";
         exit(1);
       }
       $ret = 0;
       $output = "";
       $this->siegeTmpDir = exec('ssh ' .
-        $this->remoteSiege . ' mktemp -d ', &$output, &$ret);
+        $this->remoteSiege . ' mktemp -d ', $output, $ret);
       if ($ret) {
-        invariant_violation('%s',
-	  'Invalid ssh credentials: ' . $this->remoteSiege);
+        echo "Invalid ssh credentials:  . $this->remoteSiege\n";
       }
     }
     if ($this->php5 === null && $this->hhvm === null) {
-      invariant_violation(
-        'Either --php5=/path/to/php-cgi or --php=/path/to/php-fpm or '.
-        '--hhvm=/path/to/hhvm must be specified',
-      );
+      echo  "Either --php5=/path/to/php-cgi or --php=/path/to/php-fpm or '.
+        '--hhvm=/path/to/hhvm must be specified'\n";
     }
     $engine = $this->php5 !== null ? $this->php5 : $this->hhvm;
-    invariant(
+    assert(
       shell_exec('which '.escapeshellarg($engine)) !== null ||
       is_executable($engine),
-      'Invalid engine: %s',
-      $engine,
+      'Invalid engine: '.$engine
     );
-    invariant(
+    assert(
       shell_exec('which '.escapeshellarg($this->siege)) !== null ||
       is_executable($this->siege),
-      'Could not find siege',
+      'Could not find siege'
     );
 
     $tcprint = $this->tcprint;
     if ($tcprint) {
-      invariant(
+      assert(
         $this->hhvm !== null,
-        'tcprint is only valid for hhvm',
+        'tcprint is only valid for hhvm'
       );
     }
 
     if ($this->pcreCache !== null || $this->pcreSize || $this->pcreExpire) {
-      invariant(
+      assert(
         $this->hhvm !== null,
-        'The PCRE caching scheme can only be tuned for hhvm',
+        'The PCRE caching scheme can only be tuned for hhvm'
       );
     }
 
     if ($this->precompile) {
-      invariant(
+      assert(
         $this->hhvm !== null,
-        'Only hhvm can be used with --repo-auth',
+        'Only hhvm can be used with --repo-auth'
       );
     }
 
@@ -474,6 +472,12 @@ final class PerfOptions {
     return $value;
   }
 
+  private function hphp_array_idx($search, $key, $default) {
+    if(array_key_exists($key,$search))
+        return $search[$key];
+    else return $default;
+  }
+
   private function getNullableString(string $name): ?string {
     if (!array_key_exists($name, $this->args)) {
       return null;
@@ -485,13 +489,13 @@ final class PerfOptions {
   // getopt allows multiple instances of the same argument,
   // in which case $options[$index] is an array.
   // If only one instance is given, then getopt just uses a string.
-  private function getArray(string $name): array<string> {
+  private function getArray(string $name) {
     if (array_key_exists($name, $this->args)) {
       $this->notBenchmarkingArgs[] = '--'.$name;
     } else {
       return array();
     }
-    $option_value = hphp_array_idx($this->args, $name, array());
+    $option_value = $this->hphp_array_idx($this->args, $name, array());
     if (is_array($option_value)) {
       return $option_value;
     } else {
@@ -503,7 +507,7 @@ final class PerfOptions {
     if (array_key_exists($index, $this->args)) {
       $this->notBenchmarkingArgs[] = '--'.$index;
     }
-    return (int) hphp_array_idx($this->args, $index, $the_default);
+    return (int) $this->hphp_array_idx($this->args, $index, $the_default);
   }
 
   private function getNullableInt(string $name): ?int {
@@ -518,7 +522,7 @@ final class PerfOptions {
     if (array_key_exists($index, $this->args)) {
       $this->notBenchmarkingArgs[] = '--'.$index;
     }
-    return (float) hphp_array_idx($this->args, $index, $the_default);
+    return (float) $this->hphp_array_idx($this->args, $index, $the_default);
   }
 
   //
@@ -538,7 +542,6 @@ final class PerfOptions {
     }
   }
 
-  <<__Memoize>>
   public function getTarget(): PerfTarget {
     $multiple = false;
     $target = null;
@@ -556,29 +559,30 @@ final class PerfOptions {
       fprintf(
         STDERR,
         "You must specify a target with exactly one of the following:\n".
-        implode('', $def->keys()->map($arg ==> '  --'.$arg."\n")),
+	implode('',
+	       array_map(function($arg) { return '  --'.$arg."\n"; },
+	                                  array_keys($def)))
       );
       exit(1);
     }
     return $target;
   }
 
-  private function getTargetDefinitions(
-  ): Map<string, (function(): PerfTarget)> {
-    return Map {
-      'codeigniter-hello-world' => () ==> new CodeIgniterTarget($this),
-      'drupal7' => () ==> new Drupal7Target($this),
-      'drupal8-page-cache' => () ==> new Drupal8PageCacheTarget($this),
-      'drupal8-no-cache' => () ==> new Drupal8NoCacheTarget($this),
-      'mediawiki' => () ==> new MediaWikiTarget($this),
-      'laravel4-hello-world' => () ==> new Laravel4Target($this),
-      'laravel5-hello-world' => () ==> new Laravel5Target($this),
-      'sugarcrm-login-page' => () ==> new SugarCRMLoginPageTarget($this),
-      'sugarcrm-home-page' => () ==> new SugarCRMHomePageTarget($this),
-      'toys-fibonacci' => () ==> new FibonacciTarget(),
-      'toys-hello-world' => () ==> new HelloWorldTarget(),
-      'wordpress' => () ==> new WordpressTarget($this),
-      'magento1' => () ==> new Magento1Target($this),
-    };
+  private function getTargetDefinitions() {
+    return array(
+      'codeigniter-hello-world' => function() { return new CodeIgniterTarget($this); },
+      'drupal7' => function() { return new Drupal7Target($this); },
+      'drupal8-page-cache' => function() { return new Drupal8PageCacheTarget($this); },
+      'drupal8-no-cache' =>  function() { return new Drupal8NoCacheTarget($this); },
+      'mediawiki' => function() { return new MediaWikiTarget($this); },
+      'laravel4-hello-world' => function() { return new Laravel4Target($this); } ,
+      'laravel5-hello-world' =>  function() { return new Laravel5Target($this); },
+      'sugarcrm-login-page' => function() { return new SugarCRMLoginPageTarget($this); },
+      'sugarcrm-home-page' => function() { return new SugarCRMHomePageTarget($this); },
+      'toys-fibonacci' => function() { return new FibonacciTarget(); },
+      'toys-hello-world' => function() { return new HelloWorldTarget(); },
+      'wordpress' => function()  {return new WordpressTarget($this);},
+      'magento1' => function() { return new Magento1Target($this);}
+    );
   }
 }

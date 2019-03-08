@@ -1,4 +1,4 @@
-<?hh
+<?php
 /*
  *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
@@ -8,24 +8,23 @@
  *
  */
 
-type PerfResult = Map<string, Map<string, num>>;
 
 final class PerfRunner {
-  public static function RunWithArgv(Vector<string> $argv): PerfResult {
+  public static function RunWithArgv($argv) {
     $options = new PerfOptions($argv);
     return self::RunWithOptions($options);
   }
 
-  public static function RunWithOptions(PerfOptions $options): PerfResult {
+  public static function RunWithOptions(PerfOptions $options) {
     // If we exit cleanly, Process::__destruct() gets called, but it doesn't
     // if we're killed by Ctrl-C. This tends to leak php-cgi or hhvm processes -
     // trap the signal so we can clean them up.
     pcntl_signal(
       SIGINT,
-      function() {
+      function($signal) {
         Process::cleanupAll();
         exit();
-      },
+      }
     );
 
     $php_engine = null;
@@ -36,15 +35,15 @@ final class PerfRunner {
     if ($options->hhvm) {
       $php_engine = new HHVMDaemon($options);
     }
-    invariant($php_engine !== null, 'failed to initialize a PHP engine');
+    assert($php_engine != null, 'failed to initialize a PHP engine');
 
     return self::RunWithOptionsAndEngine($options, $php_engine);
   }
 
   private static function RunWithOptionsAndEngine(
     PerfOptions $options,
-    PHPEngine $php_engine,
-  ): PerfResult {
+    PHPEngine $php_engine
+  ) {
     $options->validate();
     $target = $options->getTarget();
 
@@ -76,7 +75,7 @@ final class PerfRunner {
     $nginx = new NginxDaemon($options, $target);
     $nginx->start();
     Process::sleepSeconds($options->delayNginxStartup);
-    invariant($nginx->isRunning(), 'Failed to start nginx');
+    assert($nginx->isRunning(), 'Failed to start nginx');
 
     if ($options->useMemcached && $target->supportsMemcached()) {
       $memcached = new MemcachedDaemon($options, $target);
@@ -89,10 +88,9 @@ final class PerfRunner {
     self::PrintProgress('Starting PHP Engine');
     $php_engine->start();
     Process::sleepSeconds($options->delayPhpStartup);
-    invariant(
+    assert(
       $php_engine->isRunning(),
-      'Failed to start %s',
-      get_class($php_engine),
+      'Failed to start '.get_class($php_engine)
     );
 
     if ($target->needsUnfreeze()) {
@@ -116,14 +114,13 @@ final class PerfRunner {
       self::PrintProgress('Starting Siege for single request warmup');
       $siege = new Siege($options, $target, RequestModes::WARMUP);
       $siege->start();
-      invariant($siege->isRunning(), 'Failed to start siege');
+      assert($siege->isRunning(), 'Failed to start siege');
       $siege->wait();
 
-      invariant(!$siege->isRunning(), 'Siege is still running :/');
-      invariant(
+      assert(!$siege->isRunning(), 'Siege is still running :/');
+      assert(
         $php_engine->isRunning(),
-        '%s crashed',
-        get_class($php_engine),
+        get_class($php_engine).' crashed'
       );
     } else {
       self::PrintProgress('Skipping single request warmup');
@@ -133,14 +130,13 @@ final class PerfRunner {
       self::PrintProgress('Starting Siege for multi request warmup');
       $siege = new Siege($options, $target, RequestModes::WARMUP_MULTI);
       $siege->start();
-      invariant($siege->isRunning(), 'Failed to start siege');
+      assert($siege->isRunning(), 'Failed to start siege');
       $siege->wait();
 
-      invariant(!$siege->isRunning(), 'Siege is still running :/');
-      invariant(
+      assert(!$siege->isRunning(), 'Siege is still running :/');
+      assert(
         $php_engine->isRunning(),
-        '%s crashed',
-        get_class($php_engine),
+        'php_engine crashed'
       );
     } else {
       self::PrintProgress('Skipping multi request warmup');
@@ -151,14 +147,13 @@ final class PerfRunner {
       sleep(3);
       $siege = new Siege($options, $target, RequestModes::WARMUP_MULTI, 10);
       $siege->start();
-      invariant($siege->isRunning(), 'Failed to start siege');
+      assert($siege->isRunning(), 'Failed to start siege');
       $siege->wait();
 
-      invariant(!$siege->isRunning(), 'Siege is still running :/');
-      invariant(
+      assert(!$siege->isRunning(), 'Siege is still running :/');
+      assert(
         $php_engine->isRunning(),
-        '%s crashed',
-        get_class($php_engine),
+        'php_engine crashed'
       );
     }
 
@@ -184,7 +179,7 @@ final class PerfRunner {
     self::PrintProgress('Starting Siege for benchmark');
     $siege = new Siege($options, $target, RequestModes::BENCHMARK);
     $siege->start();
-    invariant($siege->isRunning(), 'Siege failed to start');
+    assert($siege->isRunning(), 'Siege failed to start');
     $siege->wait();
 
     if ($options->scriptAfterBenchmark !== null) {
@@ -199,11 +194,12 @@ final class PerfRunner {
         $options->tempDir));
     }
 
-    $combined_stats = Map {};
+    $combined_stats = [];
     $siege_stats = $siege->collectStats();
     foreach ($siege_stats as $page => $stats) {
-      if ($combined_stats->containsKey($page)) {
-        $combined_stats[$page]->setAll($stats);
+      if (array_key_exists($page, $combined_stats)) {
+	//$combined_stats[$page] = $stats;
+        $combined_stats[$page] = array_replace($combined_stats[$page], $stats);
       } else {
         $combined_stats[$page] = $stats;
       }
@@ -211,10 +207,11 @@ final class PerfRunner {
 
     $nginx_stats = $nginx->collectStats();
     foreach ($nginx_stats as $page => $stats) {
-      if ($combined_stats->containsKey($page)) {
-        $combined_stats[$page]->setAll($stats);
+      if (array_key_exists($page, $combined_stats)) {
+        $combined_stats[$page] = array_replace($combined_stats[$page], $stats);
+        //$combined_stats[$page] = $stats;
       } else {
-        $combined_stats[$page] = $stats;
+          $combined_stats[$page] = $stats;
       }
     }
 
@@ -228,10 +225,12 @@ final class PerfRunner {
     }
 
     if (!$options->verbose) {
-      $combined_stats =
-        $combined_stats->filterWithKey(($k, $v) ==> $k === 'Combined');
+      $combined_stats  =
+        array_filter($combined_stats, function ($k) {
+          return $k === 'Combined';
+        }, ARRAY_FILTER_USE_KEY);
     } else {
-      ksort(&$combined_stats);
+      ksort($combined_stats);
     }
     $combined_stats['Combined']['canonical'] =
       (int) !$options->notBenchmarking;
@@ -262,7 +261,7 @@ final class PerfRunner {
     return $combined_stats;
   }
 
-  private static function PrintProgress(string $out): void {
+  private static function PrintProgress($out): void {
     $timestamp = strftime('%Y-%m-%d %H:%M:%S %Z');
     $len = max(strlen($out), strlen($timestamp));
     fprintf(
@@ -270,7 +269,7 @@ final class PerfRunner {
       "\n%s\n** %s\n** %s\n",
       str_repeat('*', $len + 3), // +3 for '** '
       $timestamp,
-      $out,
+      $out
     );
   }
 }
