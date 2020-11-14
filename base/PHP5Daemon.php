@@ -85,7 +85,7 @@ final class PHP5Daemon extends PHPEngine {
       );
       $config = str_replace(
         "__CHILDREN__",
-        $this->options->serverThreads,
+        (string) $this->options->phpFCGIChildren,
         $config
       );
       $config = str_replace(

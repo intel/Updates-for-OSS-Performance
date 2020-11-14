@@ -299,12 +299,13 @@ final class PerfOptions {
     $this->applyPatches = $this->getBool('apply-patches');
     $this->useMemcached = !$this->getBool('no-memcached');
 
+    $output = [];
+    exec('nproc', $output);
+    $numProcessors = (int)($output[0]);
+
     $fraction = $this->getFloat('cpu-fraction', 1.0);
     if ($fraction !== 1.0) {
       $this->cpuBind = true;
-      $output = [];
-      exec('nproc', $output);
-      $numProcessors = (int)($output[0]);
       $numDaemonProcessors = (int)($numProcessors * $fraction);
       $this->helperProcessors = "$numDaemonProcessors-$numProcessors";
       $this->daemonProcessors = "0-$numDaemonProcessors";
@@ -338,7 +339,7 @@ final class PerfOptions {
     $this->hhvmExtraArguments = $this->getArray('hhvm-extra-arguments');
     $this->phpExtraArguments = $this->getArray('php-extra-arguments');
 
-    $this->phpFCGIChildren = $this->getInt('php-fcgi-children', 100);
+    $this->phpFCGIChildren = $this->getInt('php-fcgi-children', $numProcessors * 2);
     $this->delayNginxStartup = $this->getFloat('delay-nginx-startup', 0.1);
     $this->delayPhpStartup = $this->getFloat('delay-php-startup', 1.0);
     $this->delayMemcachedStartup = $this->getFloat('delay-memcached-startup', 1.0);
