@@ -1,48 +1,77 @@
-# Contributing to oss-performance
-We want to make contributing to this project as easy and transparent as
-possible.
+# Contributing
 
-We would greatly appreciate pull requests that:
+## Issues
 
-- Replace fake data with real-world data. Please be careful to
-  anonymize/sanitize any user data before putting your pull request on github.
-- Add additional targets.
-- Improve the performance of any supported engine. In practice, this probably
-  means configuration changes.
+We track issues using the regular GitHub Issues tracker. Issues could be functional bugs or feature requests.
 
-All targets should be representative of actual usuage, visiting a variety of
-pages, with access patterns based on visitor logs. Additional dependencies/code
-should also be minimized - for example, the Wordpress target does not depend
-on any plugins (though one was used to generate the test data).
+When reporting a bug, please provide the following information, where applicable:
 
-## Our Development Process
+* What are the steps to reproduce the bug?
+* Can you reproduce the bug using the latest [main](https://github.com/intel/Updates-for-OSS-Performance)?
+* Specifics on the CPU, platform, operating system/distribution.
 
-All development is on github; there are no Facebook-specific changes or code review
-practices.
 
-## Pull Requests
-We actively welcome your pull requests.
-1. Fork the repo and create your branch from `master`. 
-2. If you've added code that should be tested, add tests
-3. If you've changed APIs, update the documentation. 
-4. Ensure the test suite passes. 
-5. Make sure your code lints. 
-6. If you haven't already, complete the Contributor License Agreement ("CLA").
+### Contribution Guide
 
-## Contributor License Agreement ("CLA")
-In order to accept your pull request, we need you to submit a CLA. You only need
-to do this once to work on any of Facebook's open source projects.
+We accept contributions as pull requests on GitHub. Please follow these simple rules for now: 
 
-Complete your CLA here: <https://code.facebook.com/cla>
+* A PR should have a clear purpose, and do one thing only, and nothing more. This will enable us review your PR more quickly.
+* Each commit in PR should be a small, atomic change representing one step in development or targeting one bug fix.
+* Please squash intermediate steps within PR for bugfixes, style cleanups, reversions, etc., so they would not appear in merged PR history.
+* Please explain anything non-obvious from the code in comments, commit messages, or the PR description, as appropriate.
 
-## Issues  
-We use GitHub issues to track public bugs. Please ensure your description is
-clear and has sufficient instructions to be able to reproduce the issue.
+### License
 
-Facebook has a [bounty program](https://www.facebook.com/whitehat/) for the safe
-disclosure of security bugs. In those cases, please go through the process
-outlined on that page and do not file a public issue.
+Updates-for-OSS-Performance is licensed under MIT License as stated in [LICENSE](https://github.com/intel/Updates-for-OSS-Performance/blob/main/LICENSE). By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
 
-## License
-By contributing to oss-performance, you agree that your contributions will be
-licensed under its MIT license.
+### Sign your work
+
+Please use the sign-off line at the end of the patch. Your signature certifies that you wrote the patch or otherwise have the right to pass it on as an open-source patch. The rules are pretty simple: if you can certify
+the below (from [developercertificate.org](http://developercertificate.org/)):
+
+```
+Developer Certificate of Origin
+Version 1.1
+
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
+660 York Street, Suite 102,
+San Francisco, CA 94110 USA
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+Developer's Certificate of Origin 1.1
+
+By making a contribution to this project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the open source license
+    indicated in the file; or
+
+(b) The contribution is based upon previous work that, to the best
+    of my knowledge, is covered under an appropriate open source
+    license and I have the right under that license to submit that
+    work with modifications, whether created in whole or in part
+    by me, under the same open source license (unless I am
+    permitted to submit under a different license), as indicated
+    in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including all
+    personal information I submit with it, including my sign-off) is
+    maintained indefinitely and may be redistributed consistent with
+    this project or the open source license(s) involved.
+```
+
+Then you just add a line to every git commit message:
+
+    Signed-off-by: Joe Smith <joe.smith@email.com>
+
+Use your real name (sorry, no pseudonyms or anonymous contributions.)
+
+If you set your `user.name` and `user.email` git configs, you can sign your
+commit automatically with `git commit -s`.

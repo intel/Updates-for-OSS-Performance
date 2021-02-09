@@ -13,12 +13,6 @@ socket. Configuration is as close to identical as possible.
 The script will run 300 warmup requests, then as many requests as possible in 1
 minute. Statistics are only collected for the second set of data.
 
-Results
-=======
-
-We don't have anything to share yet - we want to standardize and document
-how the interpreters are built/installed first.
-
 Usage
 =====
 
@@ -41,10 +35,10 @@ Batch Usage
 
 If you want to run multiple combinations:
 
-    hhvm composer.phar install # see https://getcomposer.org/download
-    hhvm batch-run.php < batch-run.json > batch-run-out.json
+    php composer.phar install # see https://getcomposer.org/download
+    php batch-run.php < batch-run.json > batch-run-out.json
 
-See batch-run.json.example to get an idea of how to create batch-run.json.
+See batch-run.json.example to get an idea of how to create batch-run.json. Please note this feature has not been heavily tested yet.
 
 Requirements
 ============
@@ -59,13 +53,10 @@ This installs:
 - siege (versions 2.x, or 3.1.x or 4.0.3)
 - unzip
 - A mysql server on 127.0.0.1:3306
-- hhvm
+- php
 
 You need to set 'variables_order = "GPCSE"' in your php.ini to get \_ENV functional.
 Note that php asserts are disabled by default.
-
-I've been using the current versions available from yum on Centos 6.3. HHVM is
-required as this is written in Hack.
 
 Siege 3.0.x is not supported; as of writing, all 3.0.x releases have bugs that make
 it unable to correctly make the benchmark requests.  4.0.0, 4.0.1, 4.0.2 all
@@ -263,4 +254,4 @@ Use tc-print with the generated perf.data:
 Contributing
 ============
 
-Please see [CONTRIBUTING.md](https://github.com/hhvm/oss-performance/blob/master/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING.md](https://github.com/intel/Updates-for-OSS-Performance/blob/main/CONTRIBUTING.md) for details.
