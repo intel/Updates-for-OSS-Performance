@@ -110,6 +110,35 @@ The long tail was generated with:
 
 Ordering of the URLs file is courtesy of the unix 'shuf' command.
 
+Upgrade WordPress from existing v4.2 to v5.2 
+
+WordPress Update to v5.2
+------------------------
+
+Follow the below steps to be able to run WordPress v5.2.
+Note that the database dump and URLs file are characeterized by our performance study, and can be found in the wordpress DIR.
+These are not standard files downloadable from any other site.
+1. Change the directory to the wordpress target directory
+cd targets/wordpress
+2. Download WordPress 5.2.0 from https://wordpress.org/wordpress-5.2.tar.gz
+3. git diff targets/wordpress/WordpressTarget.php
+28c28
+<         __DIR__.'/wordpress-4.2.0.tar.gz',
+---
+>         __DIR__.'/wordpress-5.2.0.tar.gz',
+
+4. Make copies of the original dbdumps and URLs file for v4.2
+cp targets/wordpress/dbdump.sql.gz targets/wordpress/dbdump_v4.sql.gz 
+cp targets/wordpress/WordpressTarget.urls targets/wordpress/WordpressTarget_v4.urls
+
+5. Rename the version 5 files as the files to be used by the workload
+cp targets/wordpress/dbdump_v5.sql.gz targets/wordpress/dbdump.sql.gz 
+cp targets/wordpress/WordpressTarget_v5.urls targets/wordpress/WordpressTarget.urls
+
+6. Run the workload as before
+
+
+
 Drupal 7
 --------
 
