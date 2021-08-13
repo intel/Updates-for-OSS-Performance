@@ -76,6 +76,15 @@ here to give a simple, quick target to test that the script works correctly.
 WordPress
 ---------
 
+- To enable client sweep for Wordpress, assign client-threads=0 
+- For successful printing of the client sweep output, perform the following steps on your system:
+  1. sudo apt-get install php-pear
+  2. pear install Console_Table
+  3. locate your PEAR installation by running : pear config-get php_dir
+  4. locate your php.ini file by running : php --ini
+  5. open your php.ini file, search for the line include_path. It might have a ; in the beginning which means it is a comment. Add a new line below it:
+    a. include_path=".:<path found in step 3>" for eg. include_path=".:/usr/share/php"
+
 - Data comes from installing the demo-data-creator plugin (included) on a
   fresh install of WordPress, and clicking 'generate data' in the admin panel a
   bunch of times.
