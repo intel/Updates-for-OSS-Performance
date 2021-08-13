@@ -17,5 +17,7 @@ final class RequestModes {
   // continue to substantially JIT even after a high volume of single threaded
   // requests (mostly in conjunction with broken pseudomain JITing).
   const WARMUP_MULTI = 'warmup-multi';
+  //automated client sweep to determine optimal client threads for best performance
+  const CLIENT_SWEEP = 'client-sweep';
   const BENCHMARK = 'benchmark';
 }

@@ -21,7 +21,7 @@ final class Siege extends Process {
     PerfOptions $options,
     PerfTarget $target,
     $mode,
-    $time = 60
+    $time = 30
   ) {
     $this->options = $options;
     $this->target = $target;
@@ -61,7 +61,7 @@ final class Siege extends Process {
       }
     }
 
-    if ($mode === RequestModes::BENCHMARK) {
+    if ($mode === RequestModes::BENCHMARK || $mode === RequestModes::CLIENT_SWEEP) {
       $this->logfile = tempnam($options->tempDir, 'siege');
     }
   }
@@ -156,7 +156,7 @@ final class Siege extends Process {
       case RequestModes::WARMUP_MULTI:
         array_push($arguments,
             '-c',
-            $this->options->clientThreads,
+            '200',
             '-t',
             ((string) $this->time).'S',
             '-f',
@@ -165,6 +165,20 @@ final class Siege extends Process {
             '--log=/dev/null'
         );
         return $arguments;
+      case RequestModes::CLIENT_SWEEP:
+          $logfile = $this->logfile;
+          $client_sweep_time = 10;
+          array_push($arguments,
+              '-c',
+              $this->options->clientThreads,
+              '-t',
+              ((string) $client_sweep_time).'S',
+              '-f',
+              $urls_file,
+              '--benchmark',
+              '--log='.$logfile       
+          );
+          return $arguments;
       case RequestModes::BENCHMARK:
         if($this->options->remoteSiege) {
           $logfile = $this->options->siegeTmpDir . '/' .
