@@ -7,7 +7,11 @@
 //4. As the sweep progresses, the client threads corresponding to peak TPS values are saved. When there is more than 2% difference with a previous peak, a new peak is determined.
 //5. The sweep can go up to 20 iterations if the optimal number of client threads is not deduced earlier. You can change this number 20 using the const client_sweep_max_iterations.
 
-require_once 'Console/Table.php';
+#require_once 'Console/Table.php';
+
+spl_autoload_register(function ($class_name){
+	include $class_name . '.php';
+});
 
 class ClientSweepAutomation {
     const client_sweep_max_iterations = 20;
@@ -124,15 +128,15 @@ class ClientSweepAutomation {
     }
 
     private function PrintClientSweepResults(){
-      $res_tbl = new Console_Table();
-      $res_tbl->setHeaders(array('Iteration', 'ClientThreads', 'TPS','Difference %', 'Failed Requests'));
+      echo "\nPrinting client sweep results\n";
+      $res_tbl = new Table();
+      $res_tbl->AddColumnNames(array('Iteration', 'ClientThreads', 'TPS','Difference %', 'Failed Requests'));
       foreach($this->clientsweep_results as $row){
         if($row['clientThreads'] == $this->optimalClientThreads){
           $row['clientThreads'] = $this->optimalClientThreads . "**";
         }
-        $res_tbl->addRow($row);
+        $res_tbl->AddRow($row);
       }
-      echo "\nPrinting the results of client sweep\n";
-      echo $res_tbl->getTable();
+      $res_tbl->GenerateTable();
     }
 }

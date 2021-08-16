@@ -144,7 +144,7 @@ final class PerfRunner {
     } else {
       self::PrintProgress('Skipping multi request warmup');
     }
-
+    
     if($options->clientThreads == 0){
 		self::PrintProgress('Starting client sweep');    
 		$clientSweepObj = new ClientSweepAutomation();
