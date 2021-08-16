@@ -76,7 +76,7 @@ class ClientSweepAutomation {
           $this->diff_percent = intval($this->diff_percent * ($p = pow(10,2))) / $p;
         }
         else{
-          $this->diff_percent = NULL;
+          $this->diff_percent = 0;
           $this->max = $this->curr_tps;
         }
         $row = array(
