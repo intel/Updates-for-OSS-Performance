@@ -7,8 +7,6 @@
 //4. As the sweep progresses, the client threads corresponding to peak TPS values are saved. When there is more than 2% difference with a previous peak, a new peak is determined.
 //5. The sweep can go up to 20 iterations if the optimal number of client threads is not deduced earlier. You can change this number 20 using the const client_sweep_max_iterations.
 
-#require_once 'Console/Table.php';
-
 spl_autoload_register(function ($class_name){
 	include $class_name . '.php';
 });
