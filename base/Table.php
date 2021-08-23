@@ -114,7 +114,7 @@ class Table {
                 $row_array .= "| ";
                 $row_array .= $row[$row_keys[$i]];
                 $num_spaces = ($this->column_widths[$i][key($this->column_widths[$i])]) - ((strlen($row[$row_keys[$i]])));
-                for ($j = 0; $j < $num_spaces; $j++){
+                for ($j = 0; $j < $num_spaces; $j++) {
                     $row_array .= " ";
                 }
                 $row_array .= " ";

@@ -61,7 +61,7 @@ class ClientSweepAutomation {
       $this->failedReq = $siege_stats['Combined']['Siege failed requests'];
       if ($iteration != 1) {
         $this->diff_percent = (((floor($this->curr_tps - $this->prev_tps))/$this->prev_tps)*100);
-        $this->diff_percent = intval($this->diff_percent * ($p = pow(10,2))) / $p;
+        $this->diff_percent = number_format($this->diff_percent, 2);
       } else {
         $this->diff_percent = 0;
         $this->max = $this->curr_tps;
@@ -78,11 +78,11 @@ class ClientSweepAutomation {
 
     private function CheckIfContinue(PerfOptions $options, $iteration) {
       if ($this->failedReq > 0) {
-          return false;
+        return false;
       }
       $this->CheckIfPeak($options, $iteration);
       if ($this->CheckIfPlateau()) {
-          return false;
+        return false;
       } else {
         $this->prev_tps = $this->curr_tps;
         return true;
@@ -91,15 +91,15 @@ class ClientSweepAutomation {
 
     private function CheckIfPeak(PerfOptions $options, $iteration) {
       if (($this->diff_percent > 0) && ($this->curr_tps > $this->max)) {
-          if ($iteration != 1) {
-            $diff_with_max = floor(((floor($this->curr_tps - $this->max))/$this->max)*100);
-          } else {
-            $diff_with_max = NULL;
-          }
-          if ($diff_with_max > 2) {
-            $this->optimalClientThreads = $options->clientThreads;
-            $this->max = $this->curr_tps;
-          }
+        if ($iteration != 1) {
+          $diff_with_max = floor(((floor($this->curr_tps - $this->max))/$this->max)*100);
+        } else {
+          $diff_with_max = NULL;
+        }
+        if ($diff_with_max > 2) {
+          $this->optimalClientThreads = $options->clientThreads;
+          $this->max = $this->curr_tps;
+        }
       }
     }
 
