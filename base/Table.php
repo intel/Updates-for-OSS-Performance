@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright (c) 2014-present, Facebook, Inc.
+ *  Copyright (c) 2021-present, Intel Corp.
  *  All rights reserved.
  *
  *  This source code is licensed under the MIT license found in the
