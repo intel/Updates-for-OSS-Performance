@@ -76,6 +76,7 @@ here to give a simple, quick target to test that the script works correctly.
 WordPress
 ---------
 
+- To enable client sweep for Wordpress, assign client-threads=0 
 - Data comes from installing the demo-data-creator plugin (included) on a
   fresh install of WordPress, and clicking 'generate data' in the admin panel a
   bunch of times.

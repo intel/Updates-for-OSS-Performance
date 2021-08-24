@@ -8,7 +8,6 @@
  *
  */
 
-
 final class PerfRunner {
   public static function RunWithArgv($argv) {
     $options = new PerfOptions($argv);
@@ -112,34 +111,27 @@ final class PerfRunner {
 
     if (!$options->skipWarmUp) {
       self::PrintProgress('Starting Siege for single request warmup');
-      $siege = new Siege($options, $target, RequestModes::WARMUP);
-      $siege->start();
-      assert($siege->isRunning(), 'Failed to start siege');
-      $siege->wait();
-
-      assert(!$siege->isRunning(), 'Siege is still running :/');
-      assert(
-        $php_engine->isRunning(),
-        get_class($php_engine).' crashed'
-      );
+      $mode = RequestModes::WARMUP;
+      self::RunSiege($options, $target, $mode);
     } else {
       self::PrintProgress('Skipping single request warmup');
     }
 
     if (!$options->skipWarmUp) {
       self::PrintProgress('Starting Siege for multi request warmup');
-      $siege = new Siege($options, $target, RequestModes::WARMUP_MULTI);
-      $siege->start();
-      assert($siege->isRunning(), 'Failed to start siege');
-      $siege->wait();
-
-      assert(!$siege->isRunning(), 'Siege is still running :/');
-      assert(
-        $php_engine->isRunning(),
-        'php_engine crashed'
-      );
+      $mode = RequestModes::WARMUP_MULTI;
+      self::RunSiege($options, $target, $mode);
     } else {
       self::PrintProgress('Skipping multi request warmup');
+    }
+    
+    if ($options->clientThreads == 0) {
+      self::PrintProgress('Starting client sweep');    
+      $clientSweepObj = new ClientSweepAutomation();
+      $mode = RequestModes::CLIENT_SWEEP;
+      $options->clientThreads = $clientSweepObj->GetOptimalThreads($options, $target, $mode);
+    } else {
+      self::PrintProgress('Skipping client sweep');
     }
 
     while (!$options->skipWarmUp && $php_engine->needsRetranslatePause()) {
@@ -177,10 +169,8 @@ final class PerfRunner {
     }
 
     self::PrintProgress('Starting Siege for benchmark');
-    $siege = new Siege($options, $target, RequestModes::BENCHMARK);
-    $siege->start();
-    assert($siege->isRunning(), 'Siege failed to start');
-    $siege->wait();
+    $mode = RequestModes::BENCHMARK;
+    $siege = self::RunSiege($options, $target, $mode);
 
     if ($options->scriptAfterBenchmark !== null) {
       self::PrintProgress('Starting execution of command: '.$options->scriptAfterBenchmark);
@@ -259,6 +249,20 @@ final class PerfRunner {
     }
 
     return $combined_stats;
+  }
+
+  public static function RunSiege(PerfOptions $options, PerfTarget $target, $mode) {
+    $siege = new Siege($options, $target, $mode);
+    $siege->start();
+    assert($siege->isRunning(), 'Failed to start siege');
+    $siege->wait();
+
+    assert(!$siege->isRunning(), 'Siege is still running :/');
+    assert(
+    $php_engine->isRunning(),
+    get_class($php_engine).' crashed'
+    );
+    return $siege;
   }
 
   private static function PrintProgress($out): void {
