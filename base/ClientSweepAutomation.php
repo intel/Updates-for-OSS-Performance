@@ -18,6 +18,7 @@
 class ClientSweepAutomation {
     const client_sweep_max_iterations = 20;
     const plateau = 7;
+    private $iteration;
     private $curr_tps;
     private $prev_tps;
     private $max;
@@ -28,6 +29,7 @@ class ClientSweepAutomation {
     private $optimalClientThreads;
 
     public function __construct() {
+      $this->iteration = 1;
       $this->curr_tps = 1;
       $this->prev_tps = 0;
       $this->max = 0;
@@ -40,26 +42,30 @@ class ClientSweepAutomation {
 
     public function GetOptimalThreads(PerfOptions $options, PerfTarget $target, $mode) {
       $options->clientThreads = 0;
-      for ($iteration = 1; $iteration <= self::client_sweep_max_iterations; $iteration++) {
+      for ($this->iteration = 1; $this->iteration <= self::client_sweep_max_iterations; $this->iteration++) {
         $options->clientThreads += 50;
         $siege = PerfRunner::RunSiege($options, $target, $mode);
-        $this->ParseSiegeOutput($siege, $options, $iteration);
-        if (!($this->CheckIfContinue($options, $iteration))) {
+        $this->ParseSiegeOutput($siege, $options);
+        if (!($this->CheckIfContinue($options))) {
           break;
         }       
       }
       $this->PrintClientSweepResults();
       if ($this->optimalClientThreads == 0) {
-        trigger_error("Client sweep automation could not figure optimal client threads", E_USER_ERROR);
+        $this->ReverseClientSweep($options);
       }
+      if ($this->optimalClientThreads == 0) {
+        $this->optimalClientThreads = 50;
+      }
+
       return $this->optimalClientThreads;
     }
 
-    private function ParseSiegeOutput(Siege $siege, PerfOptions $options, $iteration) {
+    private function ParseSiegeOutput(Siege $siege, PerfOptions $options) {
       $siege_stats = $siege->collectStats();
       $this->curr_tps = $siege_stats['Combined']['Siege RPS'];
       $this->failedReq = $siege_stats['Combined']['Siege failed requests'];
-      if ($iteration != 1) {
+      if ($this->iteration != 1) {
         $this->diff_percent = (((floor($this->curr_tps - $this->prev_tps))/$this->prev_tps)*100);
         $this->diff_percent = number_format($this->diff_percent, 2);
       } else {
@@ -67,7 +73,7 @@ class ClientSweepAutomation {
         $this->max = $this->curr_tps;
       }
       $row = array(
-        "iter" => $iteration,
+        "iter" => $this->iteration,
         "clientThreads" => $options->clientThreads,
         "TPS" => $this->curr_tps,
         "diffPercentage" => $this->diff_percent . " %",
@@ -76,11 +82,11 @@ class ClientSweepAutomation {
       array_push($this->clientsweep_results, $row);
     }
 
-    private function CheckIfContinue(PerfOptions $options, $iteration) {
+    private function CheckIfContinue(PerfOptions $options) {
       if ($this->failedReq > 0) {
         return false;
       }
-      $this->CheckIfPeak($options, $iteration);
+      $this->CheckIfPeak($options);
       if ($this->CheckIfPlateau()) {
         return false;
       } else {
@@ -89,9 +95,9 @@ class ClientSweepAutomation {
       }
     }
 
-    private function CheckIfPeak(PerfOptions $options, $iteration) {
+    private function CheckIfPeak(PerfOptions $options) {
       if (($this->diff_percent > 0) && ($this->curr_tps > $this->max)) {
-        if ($iteration != 1) {
+        if ($this->iteration != 1) {
           $diff_with_max = floor(((floor($this->curr_tps - $this->max))/$this->max)*100);
         } else {
           $diff_with_max = NULL;
@@ -114,6 +120,22 @@ class ClientSweepAutomation {
           return false;
       }
       return false;
+    }
+
+    private function ReverseClientSweep(PerfOptions $options) {
+      $options->clientThreads = 40;
+      $this->iteration++;
+      $this->prev_tps = $this->clientsweep_results[0]["TPS"];
+      $this->max = $this->prev_tps;
+      while($options->clientThreads != 0) {
+        $siege = PerfRunner::RunSiege($options, $target, $mode);
+        $this->ParseSiegeOutput($siege, $options);
+        if (!($this->CheckIfContinue($options))) {
+          break;
+        } 
+        $options->clientThreads -= 10;
+        $this->iteration++;
+      }
     }
 
     private function PrintClientSweepResults() {
