@@ -50,14 +50,13 @@ class ClientSweepAutomation {
           break;
         }       
       }
-      $this->PrintClientSweepResults();
       if ($this->optimalClientThreads == 0) {
-        $this->ReverseClientSweep($options);
+        $this->ReverseClientSweep($options, $target, $mode);
       }
       if ($this->optimalClientThreads == 0) {
         $this->optimalClientThreads = 50;
       }
-
+      $this->PrintClientSweepResults();
       return $this->optimalClientThreads;
     }
 
@@ -122,7 +121,7 @@ class ClientSweepAutomation {
       return false;
     }
 
-    private function ReverseClientSweep(PerfOptions $options) {
+    private function ReverseClientSweep(PerfOptions $options, PerfTarget $target, $mode) {
       $options->clientThreads = 40;
       $this->iteration++;
       $this->prev_tps = $this->clientsweep_results[0]["TPS"];
