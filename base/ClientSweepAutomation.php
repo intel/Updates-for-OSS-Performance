@@ -71,6 +71,8 @@ class ClientSweepAutomation {
         $this->diff_percent = 0;
         $this->max = $this->curr_tps;
       }
+      print("*****printing diff percent******");
+      print($this->diff_percent);
       $row = array(
         "iter" => $this->iteration,
         "clientThreads" => $options->clientThreads,
@@ -95,6 +97,7 @@ class ClientSweepAutomation {
     }
 
     private function CheckIfPeak(PerfOptions $options) {
+      print("*********CheckIfPeak*******");
       if (($this->diff_percent > 0) && ($this->curr_tps > $this->max)) {
         if ($this->iteration != 1) {
           $diff_with_max = floor(((floor($this->curr_tps - $this->max))/$this->max)*100);
@@ -102,6 +105,7 @@ class ClientSweepAutomation {
           $diff_with_max = NULL;
         }
         if ($diff_with_max > 2) {
+          print("*******diff_with_max >2 ***********");
           $this->optimalClientThreads = $options->clientThreads;
           $this->max = $this->curr_tps;
         }
@@ -109,12 +113,15 @@ class ClientSweepAutomation {
     }
 
     private function CheckIfPlateau() {
+      print("*******CheckIfPlateau******");
       if ($this->diff_percent <= 1) {
         $this->plateau_tracker++;
         if ($this->plateau_tracker == self::plateau) {
+          print("********plateau reached********");
           return true;
         }
       } else {
+          print("********pleatue tracker = 0*******");
           $this->plateau_tracker = 0;
           return false;
       }
