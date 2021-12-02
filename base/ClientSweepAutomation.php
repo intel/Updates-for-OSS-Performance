@@ -101,7 +101,7 @@ class ClientSweepAutomation {
         } else {
           $diff_with_max = NULL;
         }
-        if ($diff_with_max > 2) {
+        if ($diff_with_max >= 2) {
           $this->optimalClientThreads = $options->clientThreads;
           $this->max = $this->curr_tps;
         }
