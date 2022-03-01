@@ -166,19 +166,24 @@ final class Siege extends Process {
         );
         return $arguments;
       case RequestModes::CLIENT_SWEEP:
+        if($this->options->remoteSiege) {
+          $logfile = $this->options->siegeTmpDir . '/' .
+	    basename($this->logfile);
+        } else {
           $logfile = $this->logfile;
-          $client_sweep_time = 10;
-          array_push($arguments,
-              '-c',
-              $this->options->clientThreads,
-              '-t',
-              ((string) $client_sweep_time).'S',
-              '-f',
-              $urls_file,
-              '--benchmark',
-              '--log='.$logfile       
-          );
-          return $arguments;
+        }
+        $client_sweep_time = 10;
+        array_push($arguments,
+            '-c',
+            $this->options->clientThreads,
+            '-t',
+            ((string) $client_sweep_time).'S',
+            '-f',
+            $urls_file,
+            '--benchmark',
+            '--log='.$logfile       
+        );
+        return $arguments;
       case RequestModes::BENCHMARK:
         if($this->options->remoteSiege) {
           $logfile = $this->options->siegeTmpDir . '/' .
