@@ -61,6 +61,11 @@ class ClientSweepAutomation {
     }
 
     private function ParseSiegeOutput(Siege $siege, PerfOptions $options) {
+      if ($options->remoteSiege) {
+        exec((' scp ' .
+          $options->remoteSiege . ':' . $options->siegeTmpDir . '/* '.
+          $options->tempDir));
+      }
       $siege_stats = $siege->collectStats();
       $this->curr_tps = $siege_stats['Combined']['Siege RPS'];
       $this->failedReq = $siege_stats['Combined']['Siege failed requests'];
