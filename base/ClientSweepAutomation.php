@@ -17,7 +17,7 @@
 
 class ClientSweepAutomation {
     const client_sweep_max_iterations = 20;
-    const plateau = 7;
+    const plateau = 10;
     private $iteration;
     private $curr_tps;
     private $prev_tps;
